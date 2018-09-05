@@ -1,5 +1,5 @@
 {
-  "name": "nombernan",
+  "name": "bombermobile",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/naqeebm/nombernan.git"
+    "url": "git+https://github.com/naqeebm/bombermobile.git"
   },
   "author": "Naqeeb Malik",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/naqeebm/nombernan/issues"
+    "url": "https://github.com/naqeebm/bombermobile/issues"
   },
-  "homepage": "https://github.com/naqeebm/nombernan#readme",
+  "homepage": "https://github.com/naqeebm/bombermobile#readme",
   "dependencies": {
     "express": "^4.16.3",
     "nodemon": "^1.18.3",

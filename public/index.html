@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <meta name="viewport" content="width=device-width, user-scalable=no" />
-  <title>NombernanJs</title>
+  <title>Bomber</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.dev.js"></script>
   <style>
     * {
@@ -16,7 +16,7 @@
     }
 
     #canv {
-      background: linear-gradient(to bottom right, cyan, green);
+      background: linear-gradient(to bottom right, grey, black);
       border-radius: 8px;
       min-width: 400px;
     }
@@ -24,65 +24,63 @@
     body {
       position: fixed;
       height: 100%;
+      width: 100%;
+      background-color: 'black';
     }
 
-    #mobilectrls {
+    #buttonContainer {
       position: fixed;
-      opacity: 0.6;
-      bottom: 0;
       width: 100%;
-      background-color: darkslateblue;
-      border-radius: 4px;
+      display: flex;
+      flex-direction: row;
+      align-content: center;
+      bottom: 20px;
+      z-index: 1000;
     }
 
-    input {
-      background-color: white;
-      color: black;
-      border: none;
-      border-radius: 4px;
+    #action {
+      margin: 0 auto;
+      background-color: 'lime';
+      padding: 1rem 1.4rem;
+      border-radius: 4rem;
     }
 
-    .btn {
-      display: inline-block;
-      height: 100px;
-      width: 100%;
+    canvas {
+      position: fixed;
+      left: 0;
+      top: 0;
+      background-color: transparent;
     }
 
-    .btn2 {
-      display: inline-block;
-      width: 100%;
-      margin: 0;
-      padding: 0.5em;
+    #canv1 {
+      z-index: 0;
+      background: linear-gradient(to bottom right, darkslategrey, black);
     }
 
-    #bombbtn {
-      background-color: green;
-      color: white;
+    #canv2 {
+      z-index: 1;
+      opacity: 0.5;
+
+    }
+
+    #canv3 {
+      z-index: 2;
     }
   </style>
 </head>
 
 <body>
-  <canvas id='canv' tabIndex='1' onclick="startGame();"></canvas>
-  <table id='mobilectrls'>
-    <tr>
-      <td rowspan='2'><input id='bombbtn' class='btn' type='button' value='B!' onmousedown="mobileInput('b',false);" onmouseup="mobileInput('b',true);"
-          onmouseout="bombing = false;" /></td>
-
-      <td rowspan='2' colspan='2'><input class='btn' type='button' value='<' onmousedown="mobileInput('l',false);" onmouseup="mobileInput('l',true);"
-          onmouseout="moving=[false,false,false,false]" /></td>
-      <td><input class='btn2' type='button' value='^' onmousedown="mobileInput('u',false);" onmouseup="mobileInput('u',true);"
-          onmouseout="moving=[false,false,false,false]" /></td>
-      <td rowspan='2' colspan='2'><input class='btn' type='button' value='>' onmousedown="mobileInput('r',false);" onmouseup="mobileInput('r',true);"
-          onmouseout="moving=[false,false,false,false]" /></td>
-    </tr>
-    <tr>
-      <td><input class='btn2' type='button' value='v' onmousedown="mobileInput('d',false);" onmouseup="mobileInput('d',true);"
-          onmouseout="moving=[false,false,false,false]" /></td>
-    </tr>
-  </table>
+  <canvas id='canv1'></canvas>
+  <canvas id='canv2'></canvas>
+  <canvas id='canv3' tabIndex='1'></canvas>
+  <div id='buttonContainer'><input type='button' id='action' value='B!' onclick='buttonAction()' z-index='5' /></div>
+  <script src="helpers.js"></script>
+  <script src="stateLoading.js"></script>
+  <script src="stateConnected.js"></script>
+  <script src="stateLobby.js"></script>
+  <script src="stateGame.js"></script>
+  <script src="stateEndScreen.js"></script>
   <script src="script.js"></script>
-
 </body>
 
 </html>
