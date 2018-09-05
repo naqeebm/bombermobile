@@ -1,10 +1,13 @@
+const GAME_MAX_BLOCKS = 40;
+
 const drawGame = ctxs => {
   // initial map
   if (state_Game.iTime <= 0) {
     let boundingRect = ctxs['bg'].canvas.getBoundingClientRect();
     state_Game.canvasBoundOffsets = [boundingRect.left, boundingRect.top];
     state_Game.tileSize =
-      Math.max(ctxs['bg'].canvas.width, ctxs['bg'].canvas.height) / 40;
+      Math.max(ctxs['bg'].canvas.width, ctxs['bg'].canvas.height) /
+      GAME_MAX_BLOCKS;
     state_Game.touchScale = 1 / state_Game.tileSize;
     for (let y = 0; y < gameMap.length; y++) {
       for (let x = 0; x < gameMap[0].length; x++) {
@@ -36,18 +39,15 @@ const drawGame = ctxs => {
     state_Game.tileSize * 1.5,
     state_Game.tileSize * 1.5,
     (bomberData.moving[0] > 0
-      ? 4
+      ? 2
       : bomberData.moving[0] < 0
-        ? 6
+        ? 4
         : bomberData.moving[1] > 0
           ? 8
           : bomberData.moving[1] < 0
-            ? 2
+            ? 6
             : 0) +
-      (Math.floor(
-        state_Game.iTime / (bomberData.moveDuration * (gameVars.FPS / 10))
-      ) %
-        2)
+      (Math.floor(state_Game.iTime / (bomberData.moveDuration * 4)) % 2)
   );
   if (state_Game.pathBlocks.length > 0) {
     for (let i = 0; i < state_Game.pathBlocks.length; i++) {
@@ -255,38 +255,40 @@ const startMotion = bomberData => {
   }
 };
 
+const stopMotion = (bomberData, gameAlso = true) => {
+  if (gameAlso) state_Game.pathBlocks = [];
+  bomberData.nextMoves = [];
+  bomberData.moving = [0, 0];
+};
+
 const state_Game = {
   actionButtonText: 'B',
   draw: drawGame,
   update: updateGame,
   handleMouse: (x, y, down) => {
+    console.log('handlemouse', x, y, down ? 'down' : 'up');
     if (down) {
-      if (state_Game.pathBlocks.length > 0) {
-        state_Game.pathBlocks = [];
-        bomberData.nextMoves = [];
-        bomberData.moving = [0, 0];
-      } else {
-        let xDest = Math.floor(
-          (x - state_Game.canvasBoundOffsets[0]) * state_Game.touchScale
-        );
-        let yDest = Math.floor(
-          (y - state_Game.canvasBoundOffsets[1]) * state_Game.touchScale
-        );
-        let path = getPath(xDest, yDest);
-        if (path !== null) {
-          for (let i = 0; i < path.length; i++) {
-            if (!(path[i][0] === bomberData.x && path[i][1] === bomberData.y)) {
-              state_Game.pathBlocks.push(path[i]);
-            }
+      state_Game.temp++;
+      let xDest = Math.floor(
+        (x - state_Game.canvasBoundOffsets[0]) * state_Game.touchScale
+      );
+      let yDest = Math.floor(
+        (y - state_Game.canvasBoundOffsets[1]) * state_Game.touchScale
+      );
+      let path = getPath(xDest, yDest);
+      if (path !== null) {
+        for (let i = 0; i < path.length; i++) {
+          if (!(path[i][0] === bomberData.x && path[i][1] === bomberData.y)) {
+            state_Game.pathBlocks.push(path[i]);
           }
-          bomberData.nextMoves = state_Game.pathBlocks;
-          state_Game.pathColor = 'lime';
-        } else {
-          state_Game.pathBlocks = [xDest, yDest];
-          state_Game.pathColor = 'red';
         }
+        state_Game.pathColor = 'lime';
+        state_Game.temp = 0;
       }
     } else {
+      if (state_Game.pathBlocks.length > 0 && state_Game.temp > 0) {
+        stopMotion(bomberData);
+      }
     }
   },
   handleAction: () => {},
@@ -296,5 +298,6 @@ const state_Game = {
   touchScale: 1,
   pathBlocks: [],
   pathColor: 'green',
-  bgQueue: []
+  bgQueue: [],
+  temp: 0
 };

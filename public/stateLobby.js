@@ -39,7 +39,8 @@ const updateLobby = iTick => {
 const drawLobbyBg = (ctx, tileSize) => {
   // ctx.fillStyle = 'black';
   // ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  ctx.translate(-tileSize * 10 + ctx.canvas.width / 2, 0);
+  let xtranslation = Math.min(0, tileSize * 10 - ctx.canvas.width / 2);
+  ctx.translate(-xtranslation, 0);
   for (let j = 0; j < state_Lobby.numTiles; j++) {
     for (let i = 0; i < state_Lobby.numTiles; i++) {
       drawBlock(
@@ -67,7 +68,7 @@ const drawLobbyBg = (ctx, tileSize) => {
     bomberData.score,
     state_Lobby.ready
   );
-  ctx.translate(tileSize * 10 - ctx.canvas.width / 2, 0);
+  ctx.translate(xtranslation, 0);
 };
 
 function drawPlayerCard(ctx, tileSize, x, y, name, score, ready) {

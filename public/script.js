@@ -130,7 +130,7 @@ function buttonAction() {
   gameStates[gameVars.state].handleAction();
 }
 
-window.addEventListener('keyup', e => {
+canvs['fg'].addEventListener('keyup', e => {
   switch (e.key) {
     case 'x':
       startTimer();
@@ -141,19 +141,19 @@ window.addEventListener('keyup', e => {
   }
 });
 
-window.addEventListener('mousedown', e => {
+canvs['fg'].addEventListener('mousedown', e => {
   gameStates[gameVars.state].handleMouse(e.pageX, e.pageY, true);
 });
 
-window.addEventListener('mouseup', e => {
+canvs['fg'].addEventListener('mouseup', e => {
   gameStates[gameVars.state].handleMouse(e.pageX, e.pageY, false);
 });
 
-window.addEventListener('resize', e => {
+canvs['fg'].addEventListener('resize', e => {
   flags['resize'] = true;
 });
 
-window.addEventListener('touchstart', e => {
+canvs['fg'].addEventListener('touchstart', e => {
   for (let i = 0; i < e.changedTouches.length; i++) {
     gameStates[gameVars.state].handleMouse(
       e.changedTouches[i].pageX,
@@ -163,7 +163,7 @@ window.addEventListener('touchstart', e => {
   }
 });
 
-window.addEventListener('touchend', e => {
+canvs['fg'].addEventListener('touchend', e => {
   for (let i = 0; i < e.changedTouches.length; i++) {
     gameStates[gameVars.state].handleMouse(
       e.changedTouches[i].pageX,
