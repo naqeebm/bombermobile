@@ -93,14 +93,21 @@ const getNewGameMap = (xTilesNum, yTilesNum) => {
       ) {
         row.push(1);
       } else {
-        if (Math.random() * 2 > 1) {
-          row.push(2);
-        } else {
+        if (y === 1) {
           row.push(0);
+        } else {
+          if (Math.random() * 2 > 1) {
+            row.push(2);
+          } else {
+            row.push(0);
+          }
         }
       }
     }
     map.push(row);
   }
+  DEFAULT_SPAWN_PLACES.forEach(df => {
+    map[df[1]][df[0]] = 0;
+  });
   return map;
 };

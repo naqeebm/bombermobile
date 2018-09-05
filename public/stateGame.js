@@ -282,6 +282,7 @@ const state_Game = {
             state_Game.pathBlocks.push(path[i]);
           }
         }
+        bomberData.nextMoves = state_Game.pathBlocks;
         state_Game.pathColor = 'lime';
         state_Game.temp = 0;
       }
