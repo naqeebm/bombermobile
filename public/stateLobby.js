@@ -1,7 +1,8 @@
 const drawLobby = ctxs => {
   if (state_Lobby.iTime === 0) {
     state_Lobby.tileSize =
-      Math.min(ctxs['bg'].canvas.width, ctxs['bg'].canvas.height) / 20;
+      Math.min(ctxs['bg'].canvas.width, ctxs['bg'].canvas.height) /
+      state_Lobby.numTiles;
     drawLobbyBg(ctxs['bg'], state_Lobby.tileSize);
   }
   ctxs['fg'].translate(
@@ -39,11 +40,16 @@ const drawLobbyBg = (ctx, tileSize) => {
   // ctx.fillStyle = 'black';
   // ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.translate(-tileSize * 10 + ctx.canvas.width / 2, 0);
-  for (let j = 0; j < 20; j++) {
-    for (let i = 0; i < 20; i++) {
+  for (let j = 0; j < state_Lobby.numTiles; j++) {
+    for (let i = 0; i < state_Lobby.numTiles; i++) {
       drawBlock(
         ctx,
-        i === 1 || i === 18 || j === 1 || j === 18 ? 1 : 0,
+        i === 1 ||
+        i === state_Lobby.numTiles - 2 ||
+        j === 1 ||
+        j === state_Lobby.numTiles - 2
+          ? 1
+          : 0,
         0,
         i * tileSize,
         j * tileSize,
@@ -57,15 +63,14 @@ const drawLobbyBg = (ctx, tileSize) => {
     tileSize,
     tileSize * 3,
     tileSize * 5,
-    0,
-    'nameu nanodesu',
-    0,
+    bomberData.name,
+    bomberData.score,
     state_Lobby.ready
   );
   ctx.translate(tileSize * 10 - ctx.canvas.width / 2, 0);
 };
 
-function drawPlayerCard(ctx, tileSize, x, y, char, name, score, ready) {
+function drawPlayerCard(ctx, tileSize, x, y, name, score, ready) {
   fillRectOnCanv(
     ctx,
     x + tileSize * 9,
@@ -149,5 +154,6 @@ const state_Lobby = {
   },
   iTime: 0,
   ready: false,
-  tileSize: null
+  tileSize: null,
+  numTiles: 17
 };

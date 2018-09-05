@@ -41,12 +41,15 @@ const gameVars = {
   changedBlocks: [],
   FPS: 60
 };
+
 const bomberData = {
   name: 'Player',
   char: 0,
   score: 0,
   x: 1,
   y: 1,
+  undrawx: 1,
+  undrawy: 1,
   moveDuration: 10,
   moveTemp: null, // [x inc, y inc, count]
   moving: [0, 0], // [x, y]
