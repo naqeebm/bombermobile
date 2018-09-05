@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, user-scalable=no" />
+  <title>NombernanJs</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.dev.js"></script>
+  <style>
+    * {
+      margin: 0;
+      overflow: hidden;
+      font-size: 1.2rem;
+    }
+
+    #canv {
+      background: linear-gradient(to bottom right, cyan, green);
+      border-radius: 8px;
+      min-width: 400px;
+    }
+
+    body {
+      position: fixed;
+      height: 100%;
+    }
+
+    #mobilectrls {
+      position: fixed;
+      opacity: 0.6;
+      bottom: 0;
+      width: 100%;
+      background-color: darkslateblue;
+      border-radius: 4px;
+    }
+
+    input {
+      background-color: white;
+      color: black;
+      border: none;
+      border-radius: 4px;
+    }
+
+    .btn {
+      display: inline-block;
+      height: 100px;
+      width: 100%;
+    }
+
+    .btn2 {
+      display: inline-block;
+      width: 100%;
+      margin: 0;
+      padding: 0.5em;
+    }
+
+    #bombbtn {
+      background-color: green;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id='canv' tabIndex='1' onclick="startGame();"></canvas>
+  <table id='mobilectrls'>
+    <tr>
+      <td rowspan='2'><input id='bombbtn' class='btn' type='button' value='B!' onmousedown="mobileInput('b',false);" onmouseup="mobileInput('b',true);"
+          onmouseout="bombing = false;" /></td>
+
+      <td rowspan='2' colspan='2'><input class='btn' type='button' value='<' onmousedown="mobileInput('l',false);" onmouseup="mobileInput('l',true);"
+          onmouseout="moving=[false,false,false,false]" /></td>
+      <td><input class='btn2' type='button' value='^' onmousedown="mobileInput('u',false);" onmouseup="mobileInput('u',true);"
+          onmouseout="moving=[false,false,false,false]" /></td>
+      <td rowspan='2' colspan='2'><input class='btn' type='button' value='>' onmousedown="mobileInput('r',false);" onmouseup="mobileInput('r',true);"
+          onmouseout="moving=[false,false,false,false]" /></td>
+    </tr>
+    <tr>
+      <td><input class='btn2' type='button' value='v' onmousedown="mobileInput('d',false);" onmouseup="mobileInput('d',true);"
+          onmouseout="moving=[false,false,false,false]" /></td>
+    </tr>
+  </table>
+  <script src="script.js"></script>
+
+</body>
+
+</html>
