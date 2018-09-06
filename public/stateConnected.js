@@ -83,7 +83,6 @@ const state_Connected = {
           `rgba(${Math.random() * 255},${Math.random() * 255},${Math.random() *
             255},${0.5 + Math.random() * 0.5})`
         ]);
-        console.log(state_Connected.particles);
       }
     }
   }
