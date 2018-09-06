@@ -29,7 +29,7 @@ io.on('connection', con => {
   console.log(con.id, 'CONNECTED, data sent');
 
   con.on('acceptConData', data => {
-    players[con.id] = data;
+    if (players[con.id] !== undefined) players[con.id] = data;
   });
 
   con.on('disconnecting', data => {
@@ -53,7 +53,7 @@ io.on('connection', con => {
   });
 
   con.on('readyChange', data => {
-    players[con.id].ready = data;
+    if (players[con.id] !== undefined) players[con.id].ready = data;
     sendToAllExcept(con.id, 'readyChanged', data);
     let all = true;
     for (let pl in players) {
