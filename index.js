@@ -27,6 +27,7 @@ io.on('connection', con => {
   io.to(con.id).emit('acceptCon', { state: state, ids, players });
   ids.push(con.id);
   console.log(con.id, 'CONNECTED, data sent');
+  console.log('>>', ids, 'CONNECTED');
 
   con.on('acceptConData', data => {
     if (players[con.id] !== undefined) players[con.id] = data;
