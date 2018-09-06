@@ -24,10 +24,9 @@ let state = 'LOBBY';
 let groups = {};
 
 io.on('connection', con => {
+  io.to(con.id).emit('acceptCon', { state: state, ids, players });
   ids.push(con.id);
-  console.log(con.id, 'CONNECTED');
-
-  io.to(con.id).emit('acceptCon', state);
+  console.log(con.id, 'CONNECTED, data sent');
 
   con.on('acceptConData', data => {
     players[con.id] = data;
@@ -42,21 +41,28 @@ io.on('connection', con => {
     }
     players = newPlayersArray;
     console.log(con.id, 'DISCONNECTED', data);
+    if (ids.length === 0) {
+      changeState('LOBBY');
+      ids = [];
+      players = new Array();
+      console.log('ALL DISCONNECTED, RESET VARS');
+    }
   });
 
   con.on('readyChange', data => {
     players[con.id].ready = data;
     sendToAllExcept(con.id, 'readyChanged', data);
     let all = true;
-    ids.forEach(id => {
-      if (players[id] !== undefined) {
-        if (!players[id].ready) {
+    for (let pl in players) {
+      if (players[pl] !== undefined)
+        if (!players[pl].ready) {
           all = false;
         }
-      }
-    });
-    console.log(all);
-    io.emit('gameMap', getNewGameMap(xTilesNum, yTilesNum));
+    }
+    if (all) {
+      io.emit('gameMap', getNewGameMap(xTilesNum, yTilesNum));
+      changeState('GAME');
+    }
   });
 });
 
@@ -110,4 +116,9 @@ const getNewGameMap = (xTilesNum, yTilesNum) => {
     map[df[1]][df[0]] = 0;
   });
   return map;
+};
+
+const changeState = newState => {
+  state = newState;
+  console.log('CHANGE STATE', newState);
 };
