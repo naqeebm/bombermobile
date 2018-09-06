@@ -1,8 +1,8 @@
 const drawLoading = ctxs => {
   ctxs['bg'].clearRect(20, 20, 200, 30);
-  ctxs['bg'].fillStyle = `rgba(${Math.sin(iTime / 32) * 255},${Math.sin(
-    state_loading.iTime / 38
-  ) * 255},${Math.sin(iTime / 24) * 255},1)`;
+  ctxs['bg'].fillStyle = `rgba(${Math.sin(state_loading.iTime / 32) *
+    255},${Math.sin(state_loading.iTime / 38) * 255},${Math.sin(iTime / 24) *
+    255},1)`;
   ctxs['bg'].fillRect(20, 20, 200, 30);
   ctxs['bg'].fillStyle = 'black';
   ctxs['bg'].font = '20px calibri';
