@@ -74,7 +74,6 @@ server.on('connect', data => {
 server.on('disconnecting', gameVars.changeState('LOADING'));
 server.on('readyChanged');
 server.on('serverStateChanged', newServerState => {
-  console.log();
   gameVars.changeState(newServerState);
 });
 
