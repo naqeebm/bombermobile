@@ -1,4 +1,4 @@
-const GAME_MAX_BLOCKS = 40;
+const GAME_MAX_BLOCKS = 20;
 
 const drawGame = ctxs => {
   // initial map

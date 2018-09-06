@@ -35,6 +35,11 @@ io.on('connection', con => {
   con.on('disconnecting', data => {
     sendToAllExcept(con.id, 'playerLeft', con.id);
     ids = ids.filter(id => id !== con.id);
+    ids.forEach(id => {
+      console.log(
+        id + ' ' + (players[id] === undefined ? 'undefined' : 'exists')
+      );
+    });
     let newPlayersArray = [];
     for (let i = 0; i < ids.length; i++) {
       newPlayersArray[ids[i]] = players[ids[i]];
