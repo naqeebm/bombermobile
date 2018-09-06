@@ -36,9 +36,7 @@ io.on('connection', con => {
     sendToAllExcept(con.id, 'playerLeft', con.id);
     ids = ids.filter(id => id !== con.id);
     ids.forEach(id => {
-      console.log(
-        id + ' ' + (players[id] === undefined ? 'undefined' : 'exists')
-      );
+      if (players[id] === undefined) ids.splice(ids.indexOf(id), 1);
     });
     let newPlayersArray = [];
     for (let i = 0; i < ids.length; i++) {
