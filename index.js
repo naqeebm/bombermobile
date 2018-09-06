@@ -123,6 +123,6 @@ const getNewGameMap = (xTilesNum, yTilesNum) => {
 
 const changeState = newState => {
   state = newState;
-  server.emit('serverStateChanged', 'LOBBY');
+  io.emit('serverStateChanged', 'LOBBY');
   console.log('CHANGE STATE', newState);
 };
