@@ -9,8 +9,12 @@ const fillRectOnCanv = (
   h,
   fill = null,
   stroke = null,
-  lw = 1
+  lw = 1,
+  clear = true
 ) => {
+  if (clear) {
+    ctx.strokeRect(x, y, w, h);
+  }
   if (fill !== null) {
     ctx.fillStyle = fill;
     ctx.fillRect(x, y, w, h);
@@ -19,6 +23,32 @@ const fillRectOnCanv = (
     ctx.strokeStyle = stroke;
     ctx.lineWidth = lw;
     ctx.strokeRect(x, y, w, h);
+  }
+};
+
+const fillRectOnCanvWithPadding = (
+  ctx,
+  x,
+  y,
+  w,
+  h,
+  padding,
+  fill = null,
+  stroke = null,
+  lw = 1,
+  clear = true
+) => {
+  if (clear) {
+    ctx.clearRect(x, y, w, h);
+  }
+  if (fill !== null) {
+    ctx.fillStyle = fill;
+    ctx.fillRect(x + padding, y + padding, w - 2 * padding, h - 2 * padding);
+  }
+  if (stroke !== null) {
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = lw;
+    ctx.strokeRect(x + padding, y + padding, w - 2 * padding, h - 2 * padding);
   }
 };
 

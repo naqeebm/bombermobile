@@ -1,5 +1,4 @@
 // resizing of webpage
-
 const canvs = {};
 const ctxs = {};
 canvs['bg'] = document.getElementById('canv1');
@@ -13,6 +12,7 @@ canvs['bg'].height = canvs['fg'].height = canvs['mid'].height =
   window.innerHeight;
 
 // game vars
+const TWOPI = 2 * Math.PI;
 const gameStates = {
   LOADING: state_Loading,
   CONNECTED: state_Connected,
@@ -36,6 +36,9 @@ const gameVars = {
     ticker = -1;
     document.getElementById('action').value =
       gameStates[newState].actionButtonText;
+    if (gameVars.state === 'LOBBY' && newState === 'GAME') {
+      state_Lobby.changeReady(false);
+    }
     gameVars.state = newState;
   },
   changedBlocks: [],
@@ -71,10 +74,14 @@ server.on('disconnecting', gameVars.changeState('LOADING'));
 server.on('readyChanged');
 
 server.on('acceptCon', data => {
-  gameVars.changeState(data);
-  let sendingData = bomberData;
-  sendingData.ready = false;
-  emitMessage('acceptConData', sendingData);
+  if (data.state === 'LOBBY') {
+    gameVars.changeState(data.state);
+    let sendingData = bomberData;
+    sendingData.ready = false;
+    emitMessage('acceptConData', sendingData);
+  } else {
+    gameVars.state = 'CONNECTED';
+  }
 });
 
 server.on('gameMap', data => {
@@ -126,9 +133,9 @@ const checkFlags = flags => {
   }
 };
 
-function buttonAction() {
+const buttonAction = () => {
   gameStates[gameVars.state].handleAction();
-}
+};
 
 canvs['fg'].addEventListener('keyup', e => {
   switch (e.key) {
@@ -173,7 +180,7 @@ canvs['fg'].addEventListener('touchend', e => {
   }
 });
 
-window.addEventListener('contextmenu', e => {
+canvs['fg'].addEventListener('contextmenu', e => {
   e.preventDefault();
 });
 
