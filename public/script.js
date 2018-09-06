@@ -73,6 +73,9 @@ server.on('connect', data => {
 
 server.on('disconnecting', gameVars.changeState('LOADING'));
 server.on('readyChanged');
+server.on('serverStateChanged', newServerState => {
+  changeState(newServerState);
+});
 
 server.on('acceptCon', data => {
   if (data.state === 'LOBBY') {
