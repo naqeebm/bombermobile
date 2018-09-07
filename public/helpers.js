@@ -89,5 +89,16 @@ const drawBlock = (ctx, blockx, blocky, xdisp, ydisp, w, h) => {
 };
 
 const drawChar = (ctx, char, x, y, w, h, image = 0) => {
-  drawBlock(ctx, char + image, 11 - char, x, y, w, h);
+  drawBlock(ctx, 0 + image, 11 - char, x, y, w, h);
 };
+
+function pointIsInRect(x, y, rectData) {
+  if (
+    x > rectData[0] &&
+    x < rectData[0] + rectData[2] &&
+    y > rectData[1] &&
+    y < rectData[1] + rectData[3]
+  )
+    return true;
+  return false;
+}

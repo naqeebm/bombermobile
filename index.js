@@ -14,27 +14,25 @@ const xTilesNum = 32;
 const yTilesNum = 32;
 let players = new Array();
 let ids = [];
+let gameMap = [];
 const DEFAULT_SPAWN_PLACES = [
   [1, 1],
   [1, yTilesNum - 2],
   [xTilesNum - 2, 1],
   [xTilesNum - 2, yTilesNum - 2]
 ];
-let state = 'LOBBY';
-let groups = {};
+// let state = 'PLAY';
 
 io.on('connection', con => {
-  io.to(con.id).emit('acceptCon', { state: state, ids, players });
+  if (gameMap.length === 0) {
+    gameMap = getNewGameMap(xTilesNum, yTilesNum);
+  }
   ids.push(con.id);
-  console.log(con.id, 'CONNECTED, data sent');
+  console.log(con.id, 'CONNECTED');
   console.log('>>', ids, 'CONNECTED');
 
-  con.on('acceptConData', data => {
-    if (players[con.id] !== undefined) players[con.id] = data;
-  });
-
   con.on('disconnecting', data => {
-    sendToAllExcept(con.id, 'playerLeft', con.id);
+    // update ids and players arrays
     ids = ids.filter(id => id !== con.id);
     ids.forEach(id => {
       if (players[id] === undefined) ids.splice(ids.indexOf(id), 1);
@@ -44,49 +42,38 @@ io.on('connection', con => {
       newPlayersArray[ids[i]] = players[ids[i]];
     }
     players = newPlayersArray;
+    io.emit('playerLeft', con.id);
     console.log(con.id, 'DISCONNECTED', data);
-    if (ids.length === 0) {
-      changeState('LOBBY');
-      ids = [];
-      players = new Array();
-      console.log('ALL DISCONNECTED, RESET VARS');
-    }
   });
 
-  con.on('readyChange', data => {
-    if (players[con.id] !== undefined) players[con.id].ready = data;
-    sendToAllExcept(con.id, 'readyChanged', data);
-    let all = true;
-    for (let pl in players) {
-      if (players[pl] !== undefined)
-        if (!players[pl].ready) {
-          all = false;
-        }
-    }
-    if (all) {
-      io.emit('gameMap', getNewGameMap(xTilesNum, yTilesNum));
-      changeState('GAME');
-    }
+  con.on('testConnection', () => {
+    con.emit('connectionConfirmed');
+  });
+
+  con.on('startMotion', data => {
+    io.sockets.emit('startedMotion', { id: con.id, ...data });
+  });
+
+  con.on('enterMainGame', data => {
+    ids.forEach(id => {
+      if (id !== con.id && players[id] !== undefined) {
+        con.emit('newPlayer', { id: id, payload: players[id] });
+      }
+    });
+    players[con.id] = data;
+    io.sockets.emit('newPlayer', { id: con.id, payload: data });
+    con.emit('gameMap', gameMap);
   });
 });
 
-function sendToAllExcept(id, req, data) {
-  for (let i = 0; i < ids.length; i++) {
-    if (players[ids[i]] !== undefined) {
-      if (players[ids[i]].connected === true && players[ids[i]].id !== id) {
-        io.to(ids[i]).emit(req, data);
-      }
+const sendToAllExcept = (excludeId, req, data) => {
+  ids.forEach(id => {
+    if (id !== excludeId) {
+      io.to(id).emit(req, data);
+      console.log('sendToAllExcept', id, req, data);
     }
-  }
-}
-
-function getNewGroup(leader) {
-  return {
-    state: 'LOBBY',
-    ids: [leader],
-    players: []
-  };
-}
+  });
+};
 
 const getNewGameMap = (xTilesNum, yTilesNum) => {
   let map = [];
@@ -122,8 +109,7 @@ const getNewGameMap = (xTilesNum, yTilesNum) => {
   return map;
 };
 
-const changeState = newState => {
-  state = newState;
-  io.emit('serverStateChanged', newState);
-  console.log('CHANGE STATE', newState);
-};
+setInterval(() => {
+  console.log('======== current vals ========');
+  console.log(ids, players);
+}, 5000);

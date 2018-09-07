@@ -1,54 +1,45 @@
 const GAME_MAX_BLOCKS = 20;
 
 const drawGame = ctxs => {
-  // initial map
   if (state_Game.iTime <= 0) {
+    // initialize vars
     let boundingRect = ctxs['bg'].canvas.getBoundingClientRect();
     state_Game.canvasBoundOffsets = [boundingRect.left, boundingRect.top];
     state_Game.tileSize =
       Math.max(ctxs['bg'].canvas.width, ctxs['bg'].canvas.height) /
       GAME_MAX_BLOCKS;
     state_Game.touchScale = 1 / state_Game.tileSize;
-    for (let y = 0; y < gameMap.length; y++) {
-      for (let x = 0; x < gameMap[0].length; x++) {
-        drawBlock(
-          ctxs['bg'],
-          gameMap[y][x],
-          0,
-          x * state_Game.tileSize,
-          y * state_Game.tileSize,
-          state_Game.tileSize,
-          state_Game.tileSize
-        );
-      }
-    }
+    state_Game.disp = [
+      ctxs['bg'].canvas.width / 2 - state_Game.tileSize,
+      ctxs['bg'].canvas.height / 2 - state_Game.tileSize
+    ];
   }
-  // each frame
+  // redrawn each frame
   // player
   ctxs['fg'].clearRect(
-    bomberData.undrawx * state_Game.tileSize - (1 * state_Game.tileSize) / 5,
-    bomberData.undrawy * state_Game.tileSize - state_Game.tileSize / 2,
-    state_Game.tileSize * 1.5,
-    state_Game.tileSize * 1.5
+    0,
+    0,
+    GAME_MAX_BLOCKS * state_Game.tileSize,
+    GAME_MAX_BLOCKS * state_Game.tileSize
   );
-  drawChar(
-    ctxs['fg'],
-    bomberData.char,
-    bomberData.x * state_Game.tileSize - (1 * state_Game.tileSize) / 5,
-    bomberData.y * state_Game.tileSize - state_Game.tileSize / 2,
-    state_Game.tileSize * 1.5,
-    state_Game.tileSize * 1.5,
-    (bomberData.moving[0] > 0 // working out offset for direction to face
-      ? 2
-      : bomberData.moving[0] < 0
-        ? 4
-        : bomberData.moving[1] > 0
-          ? 8
-          : bomberData.moving[1] < 0
-            ? 6
-            : 0) +
-      (Math.floor(state_Game.iTime / (bomberData.moveDuration * 4)) % 2) // working out offset for animation
-  );
+
+  ctxs['fg'].translate(state_Game.disp[0], state_Game.disp[1]);
+  drawPlayer(ctxs['fg'], bomberData);
+  // other players
+  for (let id in players) {
+    if (
+      players[id].x > Math.floor(bomberData.x) - GAME_MAX_BLOCKS / 3 &&
+      players[id].x < Math.floor(bomberData.x) + GAME_MAX_BLOCKS / 3 &&
+      players[id].y > Math.floor(bomberData.y) - GAME_MAX_BLOCKS / 3 &&
+      players[id].y < Math.floor(bomberData.y) + GAME_MAX_BLOCKS / 3
+    ) {
+      drawPlayer(ctxs['fg'], players[id]);
+    }
+  }
+
+  ctxs['fg'].translate(-state_Game.disp[0], -state_Game.disp[1]);
+  // path
+  ctxs['mid'].translate(state_Game.disp[0], state_Game.disp[1]);
   if (state_Game.pathBlocks.length > 0) {
     drawBreadcrumbs(
       ctxs['mid'],
@@ -68,6 +59,7 @@ const drawGame = ctxs => {
       Math.sin((state_Game.iTime / 10) % TWOPI)
     );
   }
+  ctxs['mid'].translate(-state_Game.disp[0], -state_Game.disp[1]);
   if (state_Game.clearDrawnPathFlag) {
     ctxs['mid'].clearRect(
       0,
@@ -77,6 +69,8 @@ const drawGame = ctxs => {
     );
     if (state_Game.clearDrawnPathFlag) state_Game.clearDrawnPathFlag = false;
   }
+  // next moves
+  ctxs['mid'].translate(state_Game.disp[0], state_Game.disp[1]);
   if (bomberData.nextMoves.length > 0) {
     drawBreadcrumbs(
       ctxs['mid'],
@@ -96,35 +90,60 @@ const drawGame = ctxs => {
       Math.sin((state_Game.iTime / 10) % TWOPI)
     );
   }
+  ctxs['mid'].translate(-state_Game.disp[0], -state_Game.disp[1]);
 };
 
 const updateGame = iTick => {
   // update timer
   state_Game.iTime = iTick;
-
+  if (iTick >= 0) {
+    // add blocks for initial map
+    addFollowBgBlocksToQueue(bomberData, state_Game.bgQueue, radius);
+  }
   // update background blocks
   if (state_Game.bgQueue.length > 0) {
+    ctxs['bg'].translate(state_Game.disp[0], state_Game.disp[1]);
     state_Game.bgQueue.forEach(coord => {
-      drawBlock(
-        ctxs['bg'],
-        gameMap[coord[1]][coord[0]],
-        0,
-        coord[0] * state_Game.tileSize,
-        coord[1] * state_Game.tileSize,
-        state_Game.tileSize,
-        state_Game.tileSize
-      );
+      if (
+        coord[0] >= 0 &&
+        coord[0] < gameVars.xTilesNum &&
+        coord[1] >= 0 &&
+        coord[1] < gameVars.yTilesNum
+      ) {
+        drawBlock(
+          ctxs['bg'],
+          gameVars.gameMap[coord[1]][coord[0]],
+          0,
+          coord[0] * state_Game.tileSize,
+          coord[1] * state_Game.tileSize,
+          state_Game.tileSize,
+          state_Game.tileSize
+        );
+      } else {
+        drawBlock(
+          ctxs['bg'],
+          0,
+          0,
+          coord[0] * state_Game.tileSize,
+          coord[1] * state_Game.tileSize,
+          state_Game.tileSize,
+          state_Game.tileSize
+        );
+      }
     });
+    ctxs['bg'].translate(-state_Game.disp[0], -state_Game.disp[1]);
     state_Game.bgQueue = [];
   }
 
   // update player motion
+
+  // player
   if (bomberData.moveTemp !== null) {
-    bomberData.undrawx = bomberData.x; // for undraw
-    bomberData.undrawy = bomberData.y; // for undraw
-    bomberData.x += bomberData.moveTemp[0];
-    bomberData.y += bomberData.moveTemp[1];
-    bomberData.moveTemp[2]--;
+    updateMotion(bomberData);
+    // update map disp
+    state_Game.disp[0] -= bomberData.moveTemp[0] * state_Game.tileSize;
+    state_Game.disp[1] -= bomberData.moveTemp[1] * state_Game.tileSize;
+
     clearPath();
     if (bomberData.moveTemp[2] < 1) {
       bomberData.x = Math.round(bomberData.x);
@@ -132,7 +151,11 @@ const updateGame = iTick => {
       bomberData.moving = [0, 0];
       bomberData.moveTemp = null;
     }
+
+    // add new background blocks to bgQueue
+    addFollowBgBlocksToQueue(bomberData, state_Game.bgQueue, radius);
   }
+  // add next move (player) if not moving
   if (bomberData.moveTemp === null) {
     if (bomberData.nextMoves.length > 0) {
       let nextMove = bomberData.nextMoves.pop();
@@ -140,13 +163,39 @@ const updateGame = iTick => {
         setMoving(bomberData, nextMove[0], nextMove[1]);
         startMotion(bomberData);
       }
-    } else {
     }
   }
+
+  // other players
+  for (let id in players) {
+    if (players[id].moveTemp !== null) {
+      updateMotion(players[id]);
+      if (players[id].moveTemp[2] < 1) {
+        players[id].x = Math.round(players[id].x);
+        players[id].y = Math.round(players[id].y);
+        players[id].moving = [0, 0];
+        players[id].moveTemp = null;
+      }
+    }
+    // add next move (other players) if not moving
+    if (players[id].moveTemp === null) {
+      if (players[id].nextMoves.length > 0) {
+        let nextMove = players[id].nextMoves.pop();
+        if (!(nextMove[0] === players[id].x && nextMove[1] === players[id].y)) {
+          setMoving(players[id], nextMove[0], nextMove[1]);
+          startMotion(players[id]);
+        }
+      }
+    }
+  }
+  // update map translation smoothly
+  // TODO ?
 };
 
+let radius = 8;
+
 const changeGameBlock = (x, y, newVal) => {
-  gameMap[y][x] = newVal;
+  gameVars.gameMap[y][x] = newVal;
   state_Game.bgQueue.push([x, y]);
 };
 
@@ -181,6 +230,64 @@ const drawBreadcrumbs = (
   }
 };
 
+const drawPlayer = (ctx, bomberData) => {
+  // ctx.clearRect(
+  //   bomberData.undrawx * state_Game.tileSize - (1 * state_Game.tileSize) / 5,
+  //   bomberData.undrawy * state_Game.tileSize - state_Game.tileSize / 2,
+  //   state_Game.tileSize * 1.5,
+  //   state_Game.tileSize * 1.5
+  // );
+  drawChar(
+    ctx,
+    bomberData.char,
+    bomberData.x * state_Game.tileSize - (1 * state_Game.tileSize) / 5,
+    bomberData.y * state_Game.tileSize - state_Game.tileSize / 2,
+    state_Game.tileSize * 1.5,
+    state_Game.tileSize * 1.5,
+    (bomberData.moving[0] > 0 // working out offset for direction to face
+      ? 2
+      : bomberData.moving[0] < 0
+        ? 4
+        : bomberData.moving[1] > 0
+          ? 8
+          : bomberData.moving[1] < 0
+            ? 6
+            : 0) +
+      (Math.floor(state_Game.iTime / (bomberData.moveDuration * 4)) % 2) // working out offset for animation
+  );
+  // character name
+  fillTextOnCanv(
+    ctx,
+    bomberData.name,
+    2 + bomberData.x * state_Game.tileSize - (1 * state_Game.tileSize) / 5,
+    2 + bomberData.y * state_Game.tileSize - state_Game.tileSize / 2,
+    'black'
+  );
+  fillTextOnCanv(
+    ctx,
+    bomberData.name,
+    bomberData.x * state_Game.tileSize - (1 * state_Game.tileSize) / 5,
+    bomberData.y * state_Game.tileSize - state_Game.tileSize / 2,
+    'cyan'
+  );
+};
+
+addFollowBgBlocksToQueue = (bomberData, bgQueue, followRadius) => {
+  for (
+    let y = Math.round(bomberData.y) - followRadius;
+    y < Math.round(bomberData.y) + followRadius;
+    y++
+  ) {
+    for (
+      let x = Math.round(bomberData.x) - followRadius;
+      x < Math.round(bomberData.x) + followRadius;
+      x++
+    ) {
+      bgQueue.push([x, y]);
+    }
+  }
+};
+
 const getOpenBlocks = block => {
   let x = Math.round(block.block[0]);
   let y = Math.round(block.block[1]);
@@ -190,11 +297,14 @@ const getOpenBlocks = block => {
       if (!(i == 0 && j == 0) && Math.abs(i) !== Math.abs(j)) {
         if (
           i + x > 0 &&
-          i + x < gameMap[0].length &&
-          (j + y > 0 && j + y < gameMap.length)
+          i + x < gameVars.gameMap[0].length &&
+          (j + y > 0 && j + y < gameVars.gameMap.length)
         ) {
-          if (gameMap[j + y][i + x] !== undefined) {
-            if (gameMap[j + y][i + x] === 0 || gameMap[j + y][i + x] === 5) {
+          if (gameVars.gameMap[j + y][i + x] !== undefined) {
+            if (
+              gameVars.gameMap[j + y][i + x] === 0 ||
+              gameVars.gameMap[j + y][i + x] === 5
+            ) {
               openBlocks.push({ prev: block, block: [i + x, j + y] });
             }
           }
@@ -296,6 +406,14 @@ const startMotion = bomberData => {
   }
 };
 
+const updateMotion = bomberData => {
+  bomberData.undrawx = bomberData.x; // for undraw
+  bomberData.undrawy = bomberData.y; // for undraw
+  bomberData.x += bomberData.moveTemp[0];
+  bomberData.y += bomberData.moveTemp[1];
+  bomberData.moveTemp[2]--;
+};
+
 const stopMotion = (bomberData, pathBlocksAlso = true) => {
   if (pathBlocksAlso) state_Game.pathBlocks = [];
   bomberData.nextMoves = [];
@@ -317,12 +435,14 @@ const state_Game = {
   draw: drawGame,
   update: updateGame,
   handleMouse: (x, y, down) => {
-    console.log('handlemouse', x, y, down ? 'down' : 'up');
+    // console.log('handlemouse', x, y, down ? 'down' : 'up');
     let xDest = Math.floor(
-      (x - state_Game.canvasBoundOffsets[0]) * state_Game.touchScale
+      (x - state_Game.disp[0] - state_Game.canvasBoundOffsets[0]) *
+        state_Game.touchScale
     );
     let yDest = Math.floor(
-      (y - state_Game.canvasBoundOffsets[1]) * state_Game.touchScale
+      (y - state_Game.disp[1] - state_Game.canvasBoundOffsets[1]) *
+        state_Game.touchScale
     );
     if (!down) {
       // Destination block = (xDest,yDest)
@@ -346,12 +466,18 @@ const state_Game = {
         });
         if (collision) {
           bomberData.nextMoves = state_Game.pathBlocks;
+          emitMessage('startMotion', {
+            x: bomberData.x,
+            y: bomberData.y,
+            undraw: [bomberData.undrawx, bomberData.undrawy],
+            moves: bomberData.nextMoves
+          });
         } else {
           clearPath();
         }
       }
       if (bomberData.nextMoves.length > 0 && bomberData.moveTemp !== null) {
-        stopMotion(bomberData);
+        stopMotion(bomberData, true);
       }
     }
   },
@@ -364,5 +490,6 @@ const state_Game = {
   PATHCOLOR: 'rgba(110, 188, 98, 0.4)',
   MOVECOLOR: 'rgba(100, 140, 186, 0.4)',
   clearDrawnPathFlag: false,
-  bgQueue: []
+  bgQueue: [],
+  disp: [0, 0]
 };

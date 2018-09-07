@@ -1,8 +1,9 @@
 const drawLoading = ctxs => {
   ctxs['bg'].clearRect(20, 20, 200, 30);
-  ctxs['bg'].fillStyle = `rgba(${Math.sin(state_loading.iTime / 32) *
-    255},${Math.sin(state_loading.iTime / 38) * 255},${Math.sin(iTime / 24) *
-    255},1)`;
+  ctxs['bg'].fillStyle = `rgba(${Math.sin(state_Loading.iTime / 32) *
+    255},${Math.sin(state_Loading.iTime / 38) * 255},${Math.sin(
+    state_Loading.iTime / 24
+  ) * 255},1)`;
   ctxs['bg'].fillRect(20, 20, 200, 30);
   ctxs['bg'].fillStyle = 'black';
   ctxs['bg'].font = '20px calibri';
@@ -16,7 +17,7 @@ const updateLoading = iTick => {
 };
 
 const state_Loading = {
-  actionButtonText: '-',
+  actionButtonText: ' ',
   draw: drawLoading,
   update: updateLoading,
   handleMouse: () => {},
