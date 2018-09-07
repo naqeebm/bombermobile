@@ -109,7 +109,7 @@ const getNewGameMap = (xTilesNum, yTilesNum) => {
   return map;
 };
 
-setInterval(() => {
-  console.log('======== current vals ========');
-  console.log(ids, players);
-}, 5000);
+// setInterval(() => {
+// console.log('======== current vals ========');
+// console.log(ids, players);
+// }, 5000);
