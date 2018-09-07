@@ -63,8 +63,8 @@ let flags = { resize: false };
 
 // server connection
 console.log('connecting...');
-const server = io.connect('http://localhost:8181');
-// const server = io.connect('http://178.128.35.83:8181');
+// const server = io.connect('http://localhost:8181');
+const server = io.connect('http://178.128.35.83:8181');
 
 const gotoMainGameMap = () => {
   emitMessage('enterMainGame', bomberData);
@@ -167,7 +167,7 @@ const startTimer = () => {
     timer = setInterval(() => {
       // draw
       gameStates[gameVars.state].draw(ctxs);
-      fillInfo(ctxs['mid']);
+      // fillInfo(ctxs['mid']);
       // update
       gameStates[gameVars.state].update(ticker);
       // check flags
