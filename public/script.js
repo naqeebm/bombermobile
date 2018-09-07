@@ -46,7 +46,7 @@ const gameVars = {
 
 const bomberData = {
   name: 'Player',
-  char: 0,
+  char: 1,
   score: 0,
   x: 1,
   y: 1,
@@ -63,8 +63,8 @@ let flags = { resize: false };
 
 // server connection
 console.log('connecting...');
-// const server = io.connect('http://localhost:8181');
-const server = io.connect('http://178.128.35.83:8181');
+const server = io.connect('http://localhost:8181');
+// const server = io.connect('http://178.128.35.83:8181');
 
 const gotoMainGameMap = () => {
   emitMessage('enterMainGame', bomberData);
@@ -167,7 +167,7 @@ const startTimer = () => {
     timer = setInterval(() => {
       // draw
       gameStates[gameVars.state].draw(ctxs);
-      // fillInfo(ctxs['mid']);
+      fillInfo(ctxs['mid']);
       // update
       gameStates[gameVars.state].update(ticker);
       // check flags
@@ -179,22 +179,60 @@ const startTimer = () => {
 };
 
 const fillInfo = ctx => {
-  ctx.clearRect(0, 0, ctx.canvas.width, 50);
-  ctx.font = '10px calibri';
-  ctx.fillStyle = 'white';
-  ctx.fillText(`id:${server.id}`, 5, 12);
-  for (let i = 0; i < ids.length; i++) {
-    if (players[ids[i]] !== undefined) {
-      ctx.fillText(`>>${players[ids[i]].name}: ${ids[i]}`, 5, 12 + 12 * i + 12);
-    }
-    if (players[ids[i]] !== undefined) {
-      ctx.fillText(
-        `>>${players[ids[i]].name}: ${JSON.stringify(players[ids[i]])}`,
-        180,
-        24 + 12 * i
-      );
-    }
+  if (gameVars.state === 'GAME') {
+    ctx.clearRect(0, 0, ctx.canvas.width, 50);
+    ctx.font = '16px calibri';
+    ctx.fillStyle = 'white';
+    ctx.fillText(
+      `w/2:${Math.round((ctx.canvas.width / 2 / state_Game.tileSize) * 100) /
+        100}
+      xdisp:${Math.round((state_Game.disp[0] / state_Game.tileSize) * 100) /
+        100}
+    xpos:${Math.round(bomberData.x * 100) / 100} 
+    sum:${Math.round((state_Game.disp[0] / state_Game.tileSize) * 100) / 100 +
+      Math.round(bomberData.x * 100) / 100}
+      diff:${Math.abs(
+        Math.round(
+          ctx.canvas.width / 2 / state_Game.tileSize -
+            state_Game.disp[0] / state_Game.tileSize -
+            bomberData.x
+        )
+      )}`,
+      5,
+      18
+    );
+    ctx.fillText(
+      `h/2:${Math.round((ctx.canvas.height / 2 / state_Game.tileSize) * 100) /
+        100}
+      ydisp:${Math.round((state_Game.disp[1] / state_Game.tileSize) * 100) /
+        100} 
+    ypos:${Math.round(bomberData.y * 100) / 100} 
+    sum:${Math.round((state_Game.disp[1] / state_Game.tileSize) * 100) / 100 +
+      Math.round(bomberData.y * 100) / 100}
+      diff:${Math.abs(
+        Math.round(
+          ctx.canvas.height / 2 / state_Game.tileSize -
+            state_Game.disp[1] / state_Game.tileSize -
+            bomberData.y
+        )
+      )}`,
+      5,
+      36
+    );
   }
+  // ctx.fillText(`id:${server.id}`, 5, 12);
+  // for (let i = 0; i < ids.length; i++) {
+  //   if (players[ids[i]] !== undefined) {
+  //     ctx.fillText(`>>${players[ids[i]].name}: ${ids[i]}`, 5, 12 + 12 * i + 12);
+  //   }
+  //   if (players[ids[i]] !== undefined) {
+  //     ctx.fillText(
+  //       `>>${players[ids[i]].name}: ${JSON.stringify(players[ids[i]])}`,
+  //       180,
+  //       24 + 12 * i
+  //     );
+  //   }
+  // }
 };
 
 const stopTimer = () => {

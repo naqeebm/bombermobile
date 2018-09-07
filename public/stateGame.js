@@ -140,9 +140,6 @@ const updateGame = iTick => {
   // player
   if (bomberData.moveTemp !== null) {
     updateMotion(bomberData);
-    // update map disp
-    state_Game.disp[0] -= bomberData.moveTemp[0] * state_Game.tileSize;
-    state_Game.disp[1] -= bomberData.moveTemp[1] * state_Game.tileSize;
 
     clearPath();
     if (bomberData.moveTemp[2] < 1) {
@@ -155,6 +152,45 @@ const updateGame = iTick => {
     // add new background blocks to bgQueue
     addFollowBgBlocksToQueue(bomberData, state_Game.bgQueue, radius);
   }
+
+  // move map along if needs be
+
+  if (
+    Math.abs(
+      Math.round(
+        ctxs['bg'].canvas.width / 2 / state_Game.tileSize -
+          state_Game.disp[0] / state_Game.tileSize -
+          bomberData.x
+      )
+    ) > state_Game.mapMoveFactor
+  ) {
+    state_Game.mapMoveFactor = 1;
+    state_Game.disp[0] +=
+      Math.round(
+        ctxs['bg'].canvas.width / 2 / state_Game.tileSize -
+          state_Game.disp[0] / state_Game.tileSize -
+          bomberData.x
+      ) / 2;
+  } else if (
+    Math.abs(
+      Math.round(
+        ctxs['bg'].canvas.height / 2 / state_Game.tileSize -
+          state_Game.disp[1] / state_Game.tileSize -
+          bomberData.y
+      )
+    ) > state_Game.mapMoveFactor
+  ) {
+    state_Game.mapMoveFactor = 1;
+    state_Game.disp[1] +=
+      Math.round(
+        ctxs['bg'].canvas.height / 2 / state_Game.tileSize -
+          state_Game.disp[1] / state_Game.tileSize -
+          bomberData.y
+      ) / 2;
+  } else {
+    state_Game.mapMoveFactor = radius / 2;
+  }
+
   // add next move (player) if not moving
   if (bomberData.moveTemp === null) {
     if (bomberData.nextMoves.length > 0) {
@@ -491,5 +527,6 @@ const state_Game = {
   MOVECOLOR: 'rgba(100, 140, 186, 0.4)',
   clearDrawnPathFlag: false,
   bgQueue: [],
-  disp: [0, 0]
+  disp: [0, 0],
+  mapMoveFactor: radius / 2
 };
