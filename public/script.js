@@ -72,8 +72,8 @@ let flags = { resize: false };
 
 // server connection
 console.log('connecting...');
-const server = io.connect('http://localhost:8181');
-// const server = io.connect('http://178.128.35.83:8181');
+// const server = io.connect('http://localhost:8181');
+const server = io.connect('http://178.128.35.83:8181');
 
 const gotoMainGameMap = () => {
   emitMessage('enterMainGame', bomberData);
