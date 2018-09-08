@@ -92,6 +92,10 @@ const drawChar = (ctx, char, x, y, w, h, image = 0) => {
   drawBlock(ctx, 0 + image, 11 - char, x, y, w, h);
 };
 
+const drawBomb = (ctx, x, y, w, h, offset) => {
+  drawBlock(ctx, 0 + offset, 1, x, y, w, h);
+};
+
 function pointIsInRect(x, y, rectData) {
   if (
     x > rectData[0] &&

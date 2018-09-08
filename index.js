@@ -51,6 +51,8 @@ io.on('connection', con => {
   });
 
   con.on('startMotion', data => {
+    players[con.id].x = data.x;
+    players[con.id].y = data.y;
     io.sockets.emit('startedMotion', { id: con.id, ...data });
   });
 
@@ -63,6 +65,10 @@ io.on('connection', con => {
     players[con.id] = data;
     io.sockets.emit('newPlayer', { id: con.id, payload: data });
     con.emit('gameMap', gameMap);
+  });
+
+  con.on('newBomb', data => {
+    io.sockets.emit('placeBomb', data);
   });
 });
 

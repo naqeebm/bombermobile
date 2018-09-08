@@ -13,6 +13,12 @@ const drawGame = ctxs => {
       ctxs['bg'].canvas.width / 2 - state_Game.tileSize,
       ctxs['bg'].canvas.height / 2 - state_Game.tileSize
     ];
+    state_Game.radius = [
+      Math.floor(canvs['bg'].width / state_Game.tileSize / 2),
+      Math.floor(canvs['bg'].height / state_Game.tileSize / 2)
+    ];
+    state_Game.xmapMoveFactor = state_Game.radius[0] / 2;
+    state_Game.ymapMoveFactor = state_Game.radius[1] / 2;
   }
   // redrawn each frame
   // player
@@ -36,8 +42,39 @@ const drawGame = ctxs => {
       drawPlayer(ctxs['fg'], players[id]);
     }
   }
-
+  gameVars.myBombs.forEach(bomb => {
+    drawBomb(
+      ctxs['fg'],
+      bomb[0] * state_Game.tileSize,
+      bomb[1] * state_Game.tileSize,
+      state_Game.tileSize,
+      state_Game.tileSize,
+      Math.round(bomb[2] / gameVars.FPS)
+    );
+  });
+  gameVars.bombs.forEach(bomb => {
+    drawBomb(
+      ctxs['fg'],
+      bomb[0] * state_Game.tileSize,
+      bomb[1] * state_Game.tileSize,
+      state_Game.tileSize,
+      state_Game.tileSize,
+      Math.round(bomb[2] / gameVars.FPS)
+    );
+  });
+  gameVars.explosions.forEach(expl => {
+    drawBlock(
+      ctxs['fg'],
+      expl[2],
+      2,
+      expl[0] * state_Game.tileSize,
+      expl[1] * state_Game.tileSize,
+      state_Game.tileSize,
+      state_Game.tileSize
+    );
+  });
   ctxs['fg'].translate(-state_Game.disp[0], -state_Game.disp[1]);
+
   // path
   ctxs['mid'].translate(state_Game.disp[0], state_Game.disp[1]);
   if (state_Game.pathBlocks.length > 0) {
@@ -98,7 +135,7 @@ const updateGame = iTick => {
   state_Game.iTime = iTick;
   if (iTick >= 0) {
     // add blocks for initial map
-    addFollowBgBlocksToQueue(bomberData, state_Game.bgQueue, radius);
+    addFollowBgBlocksToQueue(bomberData, state_Game.bgQueue, state_Game.radius);
   }
   // update background blocks
   if (state_Game.bgQueue.length > 0) {
@@ -135,6 +172,39 @@ const updateGame = iTick => {
     state_Game.bgQueue = [];
   }
 
+  // update bomb timers
+
+  gameVars.myBombs.forEach(bomb => {
+    bomb[2] -= 1;
+    if (bomb[2] === 0) {
+      explodeBomb(bomb);
+      bomberData.numBombs =
+        ((bomberData.numBombs + 1) % bomberData.numBombsMax) + 1;
+    }
+  });
+  gameVars.myBombs = gameVars.myBombs.filter(b => b[2] >= 0);
+
+  gameVars.bombs.forEach(bomb => {
+    bomb[2] -= 1;
+    if (bombs[2] === 0) {
+      explodeBomb(bomb);
+    }
+  });
+  gameVars.bombs = gameVars.bombs.filter(b => b[2] >= 0);
+
+  // update explosions
+
+  gameVars.explosions.forEach(expl => {
+    expl[3]--;
+    if (expl[3] === 0) {
+      if (gameVars.gameMap[expl[1]][expl[0]] === 2) {
+        changeGameBlock(expl[0], expl[1], 0);
+        console.log('newPOPUP');
+      }
+    }
+  });
+  gameVars.explosions = gameVars.explosions.filter(expl => expl[3] >= 0);
+
   // update player motion
 
   // player
@@ -150,7 +220,7 @@ const updateGame = iTick => {
     }
 
     // add new background blocks to bgQueue
-    addFollowBgBlocksToQueue(bomberData, state_Game.bgQueue, radius);
+    addFollowBgBlocksToQueue(bomberData, state_Game.bgQueue, state_Game.radius);
   }
 
   // move map along if needs be
@@ -162,9 +232,9 @@ const updateGame = iTick => {
           state_Game.disp[0] / state_Game.tileSize -
           bomberData.x
       )
-    ) > state_Game.mapMoveFactor
+    ) > state_Game.xmapMoveFactor
   ) {
-    state_Game.mapMoveFactor = 1;
+    state_Game.xmapMoveFactor = 1;
     state_Game.disp[0] +=
       Math.round(
         ctxs['bg'].canvas.width / 2 / state_Game.tileSize -
@@ -178,9 +248,9 @@ const updateGame = iTick => {
           state_Game.disp[1] / state_Game.tileSize -
           bomberData.y
       )
-    ) > state_Game.mapMoveFactor
+    ) > state_Game.ymapMoveFactor
   ) {
-    state_Game.mapMoveFactor = 1;
+    state_Game.ymapMoveFactor = 1;
     state_Game.disp[1] +=
       Math.round(
         ctxs['bg'].canvas.height / 2 / state_Game.tileSize -
@@ -188,7 +258,8 @@ const updateGame = iTick => {
           bomberData.y
       ) / 2;
   } else {
-    state_Game.mapMoveFactor = radius / 2;
+    state_Game.xmapMoveFactor = state_Game.radius[0] / 2;
+    state_Game.ymapMoveFactor = state_Game.radius[1] / 2;
   }
 
   // add next move (player) if not moving
@@ -227,8 +298,6 @@ const updateGame = iTick => {
   // update map translation smoothly
   // TODO ?
 };
-
-let radius = 8;
 
 const changeGameBlock = (x, y, newVal) => {
   gameVars.gameMap[y][x] = newVal;
@@ -310,13 +379,13 @@ const drawPlayer = (ctx, bomberData) => {
 
 addFollowBgBlocksToQueue = (bomberData, bgQueue, followRadius) => {
   for (
-    let y = Math.round(bomberData.y) - followRadius;
-    y < Math.round(bomberData.y) + followRadius;
+    let y = Math.round(bomberData.y) - followRadius[1];
+    y < Math.round(bomberData.y) + followRadius[1];
     y++
   ) {
     for (
-      let x = Math.round(bomberData.x) - followRadius;
-      x < Math.round(bomberData.x) + followRadius;
+      let x = Math.round(bomberData.x) - followRadius[0];
+      x < Math.round(bomberData.x) + followRadius[0];
       x++
     ) {
       bgQueue.push([x, y]);
@@ -466,6 +535,72 @@ const clearPath = () => {
   state_Game.clearDrawnPathFlag = true;
 };
 
+const canPlaceExplosion = (x, y) => {
+  switch (gameVars.gameMap[y][x]) {
+    case 0:
+    case 2:
+      return true;
+    default:
+      return false;
+  }
+};
+
+const addExplosion = (x, y, type) => {
+  gameVars.explosions.push([x, y, type, DEFAULTBOMBTIME / 2]);
+};
+
+const explodeBomb = bombData => {
+  let count = 0;
+  let x = bombData[0];
+  let y = bombData[1];
+  let size = bombData[3] + 1;
+  addExplosion(x, y, 0);
+  let flags = [false, false, false, false];
+  while (count < size) {
+    if (!flags[0]) {
+      if (canPlaceExplosion(x - count, y)) {
+        addExplosion(x - count, y, 2, count);
+        if (gameVars.gameMap[y][x - count] === 2) {
+          flags[0] = true;
+        }
+      } else {
+        flags[0] = true;
+      }
+    }
+    if (!flags[1]) {
+      if (canPlaceExplosion(x, y - count)) {
+        addExplosion(x, y - count, 1, count);
+        if (gameVars.gameMap[y - count][x] === 2) {
+          flags[1] = true;
+        }
+      } else {
+        flags[1] = true;
+      }
+    }
+    if (!flags[2]) {
+      if (canPlaceExplosion(x + count, y)) {
+        addExplosion(x + count, y, 2, count);
+        if (gameVars.gameMap[y][x + count] === 2) {
+          flags[2] = true;
+        }
+      } else {
+        flags[2] = true;
+      }
+    }
+    if (!flags[3]) {
+      if (canPlaceExplosion(x, y + count)) {
+        addExplosion(x, y + count, 1, count);
+        if (gameVars.gameMap[y + count][x] === 2) {
+          flags[3] = true;
+        }
+      } else {
+        flags[3] = true;
+      }
+    }
+    count++;
+  }
+};
+
 const state_Game = {
   actionButtonText: 'B',
   draw: drawGame,
@@ -517,7 +652,16 @@ const state_Game = {
       }
     }
   },
-  handleAction: () => {},
+  handleAction: () => {
+    if (bomberData.numBombs > 0) {
+      emitMessage('newBomb', {
+        id: server.id,
+        x: Math.floor(bomberData.x),
+        y: Math.floor(bomberData.y),
+        size: bomberData.bombSize
+      });
+    }
+  },
   iTime: 0,
   tileSize: 40,
   canvasBoundOffsets: [0, 0],
@@ -528,5 +672,7 @@ const state_Game = {
   clearDrawnPathFlag: false,
   bgQueue: [],
   disp: [0, 0],
-  mapMoveFactor: radius / 2
+  radius: [10, 10],
+  xmapMoveFactor: 5,
+  ymapMoveFactor: 5
 };

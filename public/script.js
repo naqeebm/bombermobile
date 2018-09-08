@@ -14,6 +14,8 @@ canvs['bg'].height = canvs['fg'].height = canvs['mid'].height =
 // game vars
 const NUM_CHARS = 4;
 const TWOPI = 2 * Math.PI;
+const DEFAULTBOMBSIZE = 1;
+const DEFAULTNUMBOMBS = 1;
 const gameStates = {
   LOADING: state_Loading,
   CONNECTED: state_Connected,
@@ -41,8 +43,12 @@ const gameVars = {
     gameVars.state = newState;
   },
   changedBlocks: [],
-  FPS: 60
+  FPS: 60,
+  myBombs: [],
+  bombs: [],
+  explosions: []
 };
+const DEFAULTBOMBTIME = 3 * gameVars.FPS;
 
 const bomberData = {
   name: 'Player',
@@ -55,7 +61,10 @@ const bomberData = {
   moveDuration: 10,
   moveTemp: null, // [x inc, y inc, count]
   moving: [0, 0], // [x, y]
-  nextMoves: [] // [[new x block, new y block],...]
+  nextMoves: [], // [[new x block, new y block],...]
+  bombSize: DEFAULTBOMBSIZE,
+  numBombs: DEFAULTNUMBOMBS,
+  numBombsMax: DEFAULTNUMBOMBS
 };
 let players = [];
 let ids = [];
@@ -135,17 +144,17 @@ server.on('startedMotion', data => {
     players[data.id].y = data.y;
     players[data.id].nextMoves = data.moves;
   }
-  console.log(
-    ids.map(id => {
-      if (players[id] !== undefined) {
-        return `${id.slice(0, 4)}... ${players[id].name}: x:${
-          players[id].x
-        } y:${players[id].y} ${JSON.stringify(players[id].nextMoves)}`;
-      } else {
-        return;
-      }
-    })
-  );
+  // console.log(
+  //   ids.map(id => {
+  //     if (players[id] !== undefined) {
+  //       return `${id.slice(0, 4)}... ${players[id].name}: x:${
+  //         players[id].x
+  //       } y:${players[id].y} ${JSON.stringify(players[id].nextMoves)}`;
+  //     } else {
+  //       return;
+  //     }
+  //   })
+  // );
 });
 
 server.on('gameMap', data => {
@@ -153,6 +162,16 @@ server.on('gameMap', data => {
   gameVars.xTilesNum = data[0].length;
   gameVars.yTilesNum = data.length;
   gameVars.changeState('GAME');
+});
+
+server.on('placeBomb', data => {
+  console.log('placeBomb', data);
+  if (data.id === server.id) {
+    bomberData.numBombs--;
+    gameVars.myBombs.push([data.x, data.y, DEFAULTBOMBTIME, data.size]);
+  } else {
+    gameVars.bombs.push([data.x, data.y, DEFAULTBOMBTIME, data.size]);
+  }
 });
 
 const emitMessage = (messageType, data) => {
