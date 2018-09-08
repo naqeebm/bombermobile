@@ -198,8 +198,10 @@ const updateGame = iTick => {
     expl[3]--;
     if (expl[3] === 0) {
       if (gameVars.gameMap[expl[1]][expl[0]] === 2) {
-        changeGameBlock(expl[0], expl[1], 0);
+        changeGameBlock(expl[0], expl[1], 5);
         console.log('newPOPUP');
+      } else {
+        changeGameBlock(expl[0], expl[1], 0);
       }
     }
   });
@@ -240,7 +242,7 @@ const updateGame = iTick => {
         ctxs['bg'].canvas.width / 2 / state_Game.tileSize -
           state_Game.disp[0] / state_Game.tileSize -
           bomberData.x
-      ) / 2;
+      ) / state_Game.moveSpeedFactor;
   } else if (
     Math.abs(
       Math.round(
@@ -256,7 +258,7 @@ const updateGame = iTick => {
         ctxs['bg'].canvas.height / 2 / state_Game.tileSize -
           state_Game.disp[1] / state_Game.tileSize -
           bomberData.y
-      ) / 2;
+      ) / state_Game.moveSpeedFactor;
   } else {
     state_Game.xmapMoveFactor = state_Game.radius[0] / 2;
     state_Game.ymapMoveFactor = state_Game.radius[1] / 2;
@@ -358,7 +360,13 @@ const drawPlayer = (ctx, bomberData) => {
           : bomberData.moving[1] < 0
             ? 6
             : 0) +
-      (Math.floor(state_Game.iTime / (bomberData.moveDuration * 4)) % 2) // working out offset for animation
+      (Math.floor(
+        state_Game.iTime /
+          (bomberData.moveTemp === null
+            ? bomberData.moveDuration * 4
+            : bomberData.moveDuration)
+      ) %
+        2) // working out offset for animation
   );
   // character name
   fillTextOnCanv(
@@ -539,6 +547,7 @@ const canPlaceExplosion = (x, y) => {
   switch (gameVars.gameMap[y][x]) {
     case 0:
     case 2:
+    case 3: // bombblock
       return true;
     default:
       return false;
@@ -674,5 +683,6 @@ const state_Game = {
   disp: [0, 0],
   radius: [10, 10],
   xmapMoveFactor: 5,
-  ymapMoveFactor: 5
+  ymapMoveFactor: 5,
+  moveSpeedFactor: 1
 };

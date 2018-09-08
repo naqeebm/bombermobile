@@ -72,8 +72,8 @@ let flags = { resize: false };
 
 // server connection
 console.log('connecting...');
-// const server = io.connect('http://localhost:8181');
-const server = io.connect('http://178.128.35.83:8181');
+const server = io.connect('http://localhost:8181');
+// const server = io.connect('http://178.128.35.83:8181');
 
 const gotoMainGameMap = () => {
   emitMessage('enterMainGame', bomberData);
@@ -168,11 +168,16 @@ server.on('placeBomb', data => {
   console.log('placeBomb', data);
   if (data.id === server.id) {
     bomberData.numBombs--;
-    gameVars.myBombs.push([data.x, data.y, DEFAULTBOMBTIME, data.size]);
+    addBomb(gameVars.myBombs, data.x, data.y, DEFAULTBOMBTIME, data.size);
   } else {
-    gameVars.bombs.push([data.x, data.y, DEFAULTBOMBTIME, data.size]);
+    addBomb(gameVars.bombs, data.x, data.y, DEFAULTBOMBTIME, data.size);
   }
 });
+
+const addBomb = (bombsArray, x, y, life, bombSize) => {
+  bombsArray.push([x, y, life, bombSize]);
+  changeGameBlock(x, y, 3);
+};
 
 const emitMessage = (messageType, data) => {
   console.log('emit message', messageType, data);
@@ -216,7 +221,10 @@ const fillInfo = ctx => {
             state_Game.disp[0] / state_Game.tileSize -
             bomberData.x
         )
-      )}`,
+      )}
+      expected: ${Math.round(
+        (canvs['bg'].width / 2 / state_Game.tileSize - bomberData.x) * 100
+      ) / 100}`,
       5,
       18
     );
