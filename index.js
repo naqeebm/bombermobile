@@ -114,6 +114,7 @@ io.on('connection', con => {
               'bombSize',
               players[con.id].bombSize
             );
+            break;
           case 2:
             if (players[con.id].moveDuration > 6) {
               players[con.id].moveDuration /= 1.2;
@@ -123,6 +124,7 @@ io.on('connection', con => {
                 players[con.id].moveDuration
               );
             }
+            break;
           case 3:
             if (players[con.id].moveDuration < 10) {
               players[con.id].moveDuration *= 1.2;
@@ -132,6 +134,7 @@ io.on('connection', con => {
                 players[con.id].moveDuration
               );
             }
+            break;
         }
       }
     }
