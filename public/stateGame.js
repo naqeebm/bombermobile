@@ -34,14 +34,16 @@ const drawGame = ctxs => {
   // other players
   for (let id in players) {
     if (
-      players[id].x > Math.floor(bomberData.x) - GAME_MAX_BLOCKS / 3 &&
-      players[id].x < Math.floor(bomberData.x) + GAME_MAX_BLOCKS / 3 &&
-      players[id].y > Math.floor(bomberData.y) - GAME_MAX_BLOCKS / 3 &&
-      players[id].y < Math.floor(bomberData.y) + GAME_MAX_BLOCKS / 3
+      players[id].x > Math.floor(bomberData.x) - state_Game.radius[0] &&
+      players[id].x < Math.floor(bomberData.x) + state_Game.radius[0] &&
+      players[id].y > Math.floor(bomberData.y) - state_Game.radius[1] &&
+      players[id].y < Math.floor(bomberData.y) + state_Game.radius[1]
     ) {
       drawPlayer(ctxs['fg'], players[id]);
     }
   }
+
+  // bombs
   gameVars.myBombs.forEach(bomb => {
     drawBomb(
       ctxs['fg'],
@@ -49,7 +51,7 @@ const drawGame = ctxs => {
       bomb[1] * state_Game.tileSize,
       state_Game.tileSize,
       state_Game.tileSize,
-      Math.round(bomb[2] / gameVars.FPS)
+      Math.ceil((bomb[2] / DEFAULTBOMBTIME) * 4)
     );
   });
   gameVars.bombs.forEach(bomb => {
@@ -59,9 +61,11 @@ const drawGame = ctxs => {
       bomb[1] * state_Game.tileSize,
       state_Game.tileSize,
       state_Game.tileSize,
-      Math.round(bomb[2] / gameVars.FPS)
+      Math.ceil((bomb[2] / DEFAULTBOMBTIME) * 4)
     );
   });
+
+  // explosions
   gameVars.explosions.forEach(expl => {
     drawBlock(
       ctxs['fg'],
@@ -196,7 +200,7 @@ const updateGame = iTick => {
 
   gameVars.bombs.forEach(bomb => {
     bomb[2] -= 1;
-    if (bombs[2] === 0) {
+    if (bomb[2] === 0) {
       explodeBomb(bomb);
     }
   });
@@ -255,49 +259,54 @@ const updateGame = iTick => {
         }
       });
     }
+    // move map disp along when player moves
+    state_Game.disp[0] =
+      canvs['bg'].width / 2 - bomberData.x * state_Game.tileSize;
+    state_Game.disp[1] =
+      canvs['bg'].height / 2 - bomberData.y * state_Game.tileSize;
 
     // add new background blocks to bgQueue
     addFollowBgBlocksToQueue(bomberData, state_Game.bgQueue, state_Game.radius);
   }
 
-  // move map along if needs be
+  // move map disp along if needs be
 
-  if (
-    Math.abs(
-      Math.round(
-        ctxs['bg'].canvas.width / 2 / state_Game.tileSize -
-          state_Game.disp[0] / state_Game.tileSize -
-          bomberData.x
-      )
-    ) > state_Game.xmapMoveFactor
-  ) {
-    state_Game.xmapMoveFactor = 1;
-    state_Game.disp[0] +=
-      Math.round(
-        ctxs['bg'].canvas.width / 2 / state_Game.tileSize -
-          state_Game.disp[0] / state_Game.tileSize -
-          bomberData.x
-      ) / state_Game.moveSpeedFactor;
-  } else if (
-    Math.abs(
-      Math.round(
-        ctxs['bg'].canvas.height / 2 / state_Game.tileSize -
-          state_Game.disp[1] / state_Game.tileSize -
-          bomberData.y
-      )
-    ) > state_Game.ymapMoveFactor
-  ) {
-    state_Game.ymapMoveFactor = 1;
-    state_Game.disp[1] +=
-      Math.round(
-        ctxs['bg'].canvas.height / 2 / state_Game.tileSize -
-          state_Game.disp[1] / state_Game.tileSize -
-          bomberData.y
-      ) / state_Game.moveSpeedFactor;
-  } else {
-    state_Game.xmapMoveFactor = state_Game.radius[0] / 2;
-    state_Game.ymapMoveFactor = state_Game.radius[1] / 2;
-  }
+  // if (
+  //   Math.abs(
+  //     Math.round(
+  //       ctxs['bg'].canvas.width / 2 / state_Game.tileSize -
+  //         state_Game.disp[0] / state_Game.tileSize -
+  //         bomberData.x
+  //     )
+  //   ) > state_Game.xmapMoveFactor
+  // ) {
+  //   state_Game.xmapMoveFactor = 1;
+  //   state_Game.disp[0] +=
+  //     Math.round(
+  //       ctxs['bg'].canvas.width / 2 / state_Game.tileSize -
+  //         state_Game.disp[0] / state_Game.tileSize -
+  //         bomberData.x
+  //     ) / state_Game.moveSpeedFactor;
+  // } else if (
+  //   Math.abs(
+  //     Math.round(
+  //       ctxs['bg'].canvas.height / 2 / state_Game.tileSize -
+  //         state_Game.disp[1] / state_Game.tileSize -
+  //         bomberData.y
+  //     )
+  //   ) > state_Game.ymapMoveFactor
+  // ) {
+  //   state_Game.ymapMoveFactor = 1;
+  //   state_Game.disp[1] +=
+  //     Math.round(
+  //       ctxs['bg'].canvas.height / 2 / state_Game.tileSize -
+  //         state_Game.disp[1] / state_Game.tileSize -
+  //         bomberData.y
+  //     ) / state_Game.moveSpeedFactor;
+  // } else {
+  //   state_Game.xmapMoveFactor = state_Game.radius[0] / 2;
+  //   state_Game.ymapMoveFactor = state_Game.radius[1] / 2;
+  // }
 
   // add next move (player) if not moving
   if (bomberData.moveTemp === null) {
@@ -615,6 +624,7 @@ const addExplosion = (x, y, type) => {
 };
 
 const explodeBomb = bombData => {
+  if(bombData!==undefined){
   let count = 0;
   let x = bombData[0];
   let y = bombData[1];
@@ -665,6 +675,7 @@ const explodeBomb = bombData => {
     }
     count++;
   }
+}
 };
 
 const state_Game = {
