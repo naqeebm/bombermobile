@@ -12,6 +12,7 @@ const io = socket(server);
 
 const xTilesNum = 32;
 const yTilesNum = 32;
+const numPowerupTypes = 4;
 let players = new Array();
 let ids = [];
 let gameMap = [];
@@ -21,6 +22,8 @@ const DEFAULT_SPAWN_PLACES = [
   [xTilesNum - 2, 1],
   [xTilesNum - 2, yTilesNum - 2]
 ];
+let powerups = [];
+
 // let state = 'PLAY';
 
 io.on('connection', con => {
@@ -65,19 +68,89 @@ io.on('connection', con => {
     players[con.id] = data;
     io.sockets.emit('newPlayer', { id: con.id, payload: data });
     con.emit('gameMap', gameMap);
+    powerups.forEach(pw => {
+      con.emit('newPowerup', pw);
+    });
   });
 
   con.on('newBomb', data => {
     io.sockets.emit('placeBomb', data);
   });
+
+  con.on('newPowerup', data => {
+    if (gameMap[data.y][data.x] === 2) {
+      gameMap[data.y][data.x] = 5;
+      let newPopup = [
+        data.x,
+        data.y,
+        Math.floor(Math.random() * numPowerupTypes)
+      ];
+      powerups.push(newPopup);
+      io.sockets.emit('newPowerup', newPopup);
+      console.log('powerups', powerups);
+    }
+  });
+
+  con.on('takePowerup', data => {
+    let powerUp = powerups.filter(pw => pw[0] === data.x && pw[1] === data.y);
+    if (powerUp.length > 0) {
+      powerUp = powerUp[0];
+      io.sockets.emit('takePowerup', data);
+      powerups = powerups.filter(pw => !(pw[0] === data.x && pw[1] === data.y));
+      if (players[con.id] !== null) {
+        switch (data.type) {
+          case 0:
+            players[con.id].numBombsMax++;
+            emitPlayerAttributeChange(
+              con.id,
+              'numBombsMax',
+              players[con.id].numBombsMax
+            );
+            break;
+          case 1:
+            players[con.id].bombSize++;
+            emitPlayerAttributeChange(
+              con.id,
+              'bombSize',
+              players[con.id].bombSize
+            );
+          case 2:
+            if (players[con.id].moveDuration > 6) {
+              players[con.id].moveDuration /= 1.2;
+              emitPlayerAttributeChange(
+                con.id,
+                'moveDuration',
+                players[con.id].moveDuration
+              );
+            }
+          case 3:
+            if (players[con.id].moveDuration < 10) {
+              players[con.id].moveDuration *= 1.2;
+              emitPlayerAttributeChange(
+                con.id,
+                'moveDuration',
+                players[con.id].moveDuration
+              );
+            }
+        }
+      }
+    }
+    console.log('powerups', powerups);
+  });
+
+  con.on('destroyBlock', data => {
+    if (gameMap[data.y][data.x] === 2) {
+      gameMap[data.y][data.x] = 0;
+      io.sockets.emit('destroyBlock', data);
+    }
+  });
 });
 
-const sendToAllExcept = (excludeId, req, data) => {
-  ids.forEach(id => {
-    if (id !== excludeId) {
-      io.to(id).emit(req, data);
-      console.log('sendToAllExcept', id, req, data);
-    }
+const emitPlayerAttributeChange = (id, attr, newVal) => {
+  io.sockets.emit('changePlayerAttribute', {
+    id,
+    attr,
+    newVal
   });
 };
 

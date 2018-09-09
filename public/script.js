@@ -46,7 +46,8 @@ const gameVars = {
   FPS: 60,
   myBombs: [],
   bombs: [],
-  explosions: []
+  explosions: [],
+  powerups: []
 };
 const DEFAULTBOMBTIME = 3 * gameVars.FPS;
 
@@ -72,8 +73,8 @@ let flags = { resize: false };
 
 // server connection
 console.log('connecting...');
-// const server = io.connect('http://localhost:8181');
-const server = io.connect('http://178.128.35.83:8181');
+const server = io.connect('http://localhost:8181');
+// const server = io.connect('http://178.128.35.83:8181');
 
 const gotoMainGameMap = () => {
   emitMessage('enterMainGame', bomberData);
@@ -144,17 +145,6 @@ server.on('startedMotion', data => {
     players[data.id].y = data.y;
     players[data.id].nextMoves = data.moves;
   }
-  // console.log(
-  //   ids.map(id => {
-  //     if (players[id] !== undefined) {
-  //       return `${id.slice(0, 4)}... ${players[id].name}: x:${
-  //         players[id].x
-  //       } y:${players[id].y} ${JSON.stringify(players[id].nextMoves)}`;
-  //     } else {
-  //       return;
-  //     }
-  //   })
-  // );
 });
 
 server.on('gameMap', data => {
@@ -171,6 +161,28 @@ server.on('placeBomb', data => {
     addBomb(gameVars.myBombs, data.x, data.y, DEFAULTBOMBTIME, data.size);
   } else {
     addBomb(gameVars.bombs, data.x, data.y, DEFAULTBOMBTIME, data.size);
+  }
+});
+
+server.on('newPowerup', data => {
+  console.log('newPowerup', data);
+  gameVars.powerups.push(data);
+  changeGameBlock(data[0], data[1], 5);
+});
+
+server.on('takePowerup', data => {
+  gameVars.powerups = gameVars.powerups.filter(
+    pw => !(pw[0] === data.x && pw[1] === data.y && pw[2] === data.type)
+  );
+  changeGameBlock(data.x, data.y, 0);
+});
+
+server.on('changePlayerAttribute', data => {
+  console.log('changePlayerAttribute', data);
+  if (server.id === data.id) {
+    bomberData[data.attr] = data.newVal;
+  } else if (players[data.id] !== undefined) {
+    players[data.id][data.attr] === data.newVal;
   }
 });
 
@@ -191,7 +203,7 @@ const startTimer = () => {
     timer = setInterval(() => {
       // draw
       gameStates[gameVars.state].draw(ctxs);
-      // fillInfo(ctxs['mid']);
+      fillInfo(ctxs['mid']);
       // update
       gameStates[gameVars.state].update(ticker);
       // check flags

@@ -73,6 +73,17 @@ const drawGame = ctxs => {
       state_Game.tileSize
     );
   });
+  gameVars.powerups.forEach(pow => {
+    drawBlock(
+      ctxs['fg'],
+      pow[2],
+      4,
+      pow[0] * state_Game.tileSize,
+      pow[1] * state_Game.tileSize,
+      state_Game.tileSize,
+      state_Game.tileSize
+    );
+  });
   ctxs['fg'].translate(-state_Game.disp[0], -state_Game.disp[1]);
 
   // path
@@ -198,8 +209,8 @@ const updateGame = iTick => {
     expl[3]--;
     if (expl[3] === 0) {
       if (gameVars.gameMap[expl[1]][expl[0]] === 2) {
-        changeGameBlock(expl[0], expl[1], 5);
-        console.log('newPOPUP');
+        // changeGameBlock(expl[0], expl[1], 5);
+        emitMessage('newPowerup', { x: expl[0], y: expl[1] });
       } else {
         changeGameBlock(expl[0], expl[1], 0);
       }
@@ -219,6 +230,13 @@ const updateGame = iTick => {
       bomberData.y = Math.round(bomberData.y);
       bomberData.moving = [0, 0];
       bomberData.moveTemp = null;
+
+      // check if on powerup
+      gameVars.powerups.forEach(pow => {
+        if (bomberData.x === pow[0] && bomberData.y === pow[1]) {
+          emitMessage('takePowerup', { x: pow[0], y: pow[1], type: pow[2] });
+        }
+      });
     }
 
     // add new background blocks to bgQueue
