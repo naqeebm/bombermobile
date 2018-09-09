@@ -216,16 +216,35 @@ const startTimer = () => {
 
 const fillInfo = ctx => {
   if (gameVars.state === 'GAME') {
-    ctx.clearRect(0, 0, ctx.canvas.width, 20 + 24 * ids.length);
+    ctx.clearRect(0, 0, ctx.canvas.width, 24 + 24 * ids.length);
     ctx.font = '24px calibri';
     ctx.fillStyle = 'white';
     drawChar(ctx, bomberData.char, 2, 2, 20, 20, 0);
-    ctx.fillText(`${bomberData.name}: ${bomberData.score}`, 24, 20);
+    drawBlock(ctx, 0, 2, 400, 2, 20, 20);
+    ctx.fillText(
+      `${bomberData.name}
+      |
+      Score:${bomberData.score}
+      mov:${Math.round(bomberData.moveDuration)}
+      ${' '}
+      ${bomberData.bombSize}
+      ${bomberData.numBombs}/${bomberData.numBombsMax}`,
+      24,
+      20
+    );
     let count = 1;
     for (let id in players) {
       drawChar(ctx, players[id].char, 2, 2 + 24 * count, 20, 20, 0);
+      drawChar(ctx, players[id].char, 2, 2, 20, 20 + 24 * count, 0);
+      drawBlock(ctx, 0, 2, 400, 2, 20, 20 + 24 * count);
       ctx.fillText(
-        `${players[id].name}: ${players[id].score}`,
+        `${players[id].name}
+      |
+      Score:${players[id].score}
+      mov:${Math.round(players[id].moveDuration)}
+      ${' '}
+      ${players[id].bombSize}
+      ${players[id].numBombsMax}`,
         24,
         20 + 24 * count
       );

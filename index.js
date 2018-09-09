@@ -55,9 +55,11 @@ io.on('connection', con => {
   });
 
   con.on('startMotion', data => {
-    players[con.id].x = data.x;
-    players[con.id].y = data.y;
-    io.sockets.emit('startedMotion', { id: con.id, ...data });
+    if (players[con.id] !== undefined) {
+      players[con.id].x = data.x;
+      players[con.id].y = data.y;
+      io.sockets.emit('startedMotion', { id: con.id, ...data });
+    }
   });
 
   con.on('enterMainGame', data => {
@@ -100,7 +102,7 @@ io.on('connection', con => {
       powerUp = powerUp[0];
       io.sockets.emit('takePowerup', data);
       powerups = powerups.filter(pw => !(pw[0] === data.x && pw[1] === data.y));
-      if (players[con.id] !== null) {
+      if (players[con.id] !== undefined) {
         switch (data.type) {
           case 0:
             players[con.id].numBombsMax++;
