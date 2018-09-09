@@ -216,19 +216,31 @@ const startTimer = () => {
 
 const fillInfo = ctx => {
   if (gameVars.state === 'GAME') {
-    ctx.clearRect(0, 0, ctx.canvas.width, 50);
-    ctx.font = '16px calibri';
+    ctx.clearRect(0, 0, ctx.canvas.width, 20 + 24 * ids.length);
+    ctx.font = '24px calibri';
     ctx.fillStyle = 'white';
-    ctx.fillText(
-      `x:${Math.round(bomberData.x * 100) / 100} y:${Math.round(
-        bomberData.y * 100
-      ) / 100} mov:${Math.round(bomberData.moveDuration * 100) / 100} bombs:${
-        bomberData.numBombs
-      }/${bomberData.numBombsMax} bombSize:${bomberData.bombSize}`,
-      5,
-      18,
-      canvs['bg'].width - 5
-    );
+    drawChar(ctx, bomberData.char, 2, 2, 20, 20, 0);
+    ctx.fillText(`${bomberData.name}: ${bomberData.score}`, 24, 20);
+    let count = 1;
+    for (let id in players) {
+      drawChar(ctx, players[id].char, 2, 2 + 24 * count, 20, 20, 0);
+      ctx.fillText(
+        `${players[id].name}: ${players[id].score}`,
+        24,
+        20 + 24 * count
+      );
+      count++;
+    }
+    // ctx.fillText(
+    //   `x:${Math.round(bomberData.x * 100) / 100} y:${Math.round(
+    //     bomberData.y * 100
+    //   ) / 100} mov:${Math.round(bomberData.moveDuration * 100) / 100} bombs:${
+    //     bomberData.numBombs
+    //   }/${bomberData.numBombsMax} bombSize:${bomberData.bombSize}`,
+    //   5,
+    //   18,
+    //   canvs['bg'].width - 5
+    // );
     // ctx.fillText(
     //   `w/2:${Math.round((ctx.canvas.width / 2 / state_Game.tileSize) * 100) /
     //     100}
