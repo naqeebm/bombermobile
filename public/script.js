@@ -182,7 +182,9 @@ server.on('changePlayerAttribute', data => {
   if (server.id === data.id) {
     bomberData[data.attr] = data.newVal;
   } else if (players[data.id] !== undefined) {
-    players[data.id][data.attr] === data.newVal;
+    console.log(data.id, data.attr, data.newVal);
+    players[data.id][data.attr] = data.newVal;
+    console.log(players[data.id][data.attr]);
   }
 });
 
@@ -216,8 +218,10 @@ const startTimer = () => {
 
 const fillInfo = ctx => {
   if (gameVars.state === 'GAME') {
-    ctx.clearRect(0, 0, ctx.canvas.width, 24 + 24 * ids.length);
-    ctx.font = '24px calibri';
+    ctx.clearRect(0, 0, ctx.canvas.width, 20 + 20 * ids.length + 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.fillRect(0, 0, canvs['bg'].width, 20 + 20 * ids.length + 2);
+    ctx.font = '20px calibri';
     ctx.fillStyle = 'white';
     drawChar(ctx, bomberData.char, 2, 2, 20, 20, 0);
     drawBlock(ctx, 0, 2, 400, 2, 20, 20);
@@ -229,24 +233,24 @@ const fillInfo = ctx => {
       ${' '}
       ${bomberData.bombSize}
       ${bomberData.numBombs}/${bomberData.numBombsMax}`,
-      24,
-      20
+      20,
+      20,
+      canvs['bg'].width * 0.9
     );
     let count = 1;
     for (let id in players) {
-      drawChar(ctx, players[id].char, 2, 2 + 24 * count, 20, 20, 0);
-      drawChar(ctx, players[id].char, 2, 2, 20, 20 + 24 * count, 0);
-      drawBlock(ctx, 0, 2, 400, 2, 20, 20 + 24 * count);
+      drawChar(ctx, players[id].char, 2, 2 + 20 * count, 20, 20, 0);
+      drawBlock(ctx, 0, 2, 400, 2, 20, 20 + 20 * count);
       ctx.fillText(
         `${players[id].name}
       |
       Score:${players[id].score}
-      mov:${Math.round(players[id].moveDuration)}
-      ${' '}
+      ${Math.round(players[id].moveDuration)}
       ${players[id].bombSize}
       ${players[id].numBombsMax}`,
-        24,
-        20 + 24 * count
+        20,
+        20 + 20 * count,
+        canvs['bg'].width * 0.9
       );
       count++;
     }
