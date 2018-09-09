@@ -15,7 +15,7 @@ canvs['bg'].height = canvs['fg'].height = canvs['mid'].height =
 const NUM_CHARS = 4;
 const TWOPI = 2 * Math.PI;
 const DEFAULTBOMBSIZE = 1;
-const DEFAULTNUMBOMBS = 1;
+const DEFAULTNUMBOMBS = 2;
 const gameStates = {
   LOADING: state_Loading,
   CONNECTED: state_Connected,
@@ -220,44 +220,54 @@ const fillInfo = ctx => {
     ctx.font = '16px calibri';
     ctx.fillStyle = 'white';
     ctx.fillText(
-      `w/2:${Math.round((ctx.canvas.width / 2 / state_Game.tileSize) * 100) /
-        100}
-      xdisp:${Math.round((state_Game.disp[0] / state_Game.tileSize) * 100) /
-        100}
-    xpos:${Math.round(bomberData.x * 100) / 100} 
-    sum:${Math.round((state_Game.disp[0] / state_Game.tileSize) * 100) / 100 +
-      Math.round(bomberData.x * 100) / 100}
-      diff:${Math.abs(
-        Math.round(
-          ctx.canvas.width / 2 / state_Game.tileSize -
-            state_Game.disp[0] / state_Game.tileSize -
-            bomberData.x
-        )
-      )}
-      expected: ${Math.round(
-        (canvs['bg'].width / 2 / state_Game.tileSize - bomberData.x) * 100
-      ) / 100}`,
+      `x:${Math.round(bomberData.x * 100) / 100} y:${Math.round(
+        bomberData.y * 100
+      ) / 100} mov:${Math.round(bomberData.moveDuration * 100) / 100} bombs:${
+        bomberData.numBombs
+      }/${bomberData.numBombsMax} bombSize:${bomberData.bombSize}`,
       5,
-      18
+      18,
+      canvs['bg'].width - 5
     );
-    ctx.fillText(
-      `h/2:${Math.round((ctx.canvas.height / 2 / state_Game.tileSize) * 100) /
-        100}
-      ydisp:${Math.round((state_Game.disp[1] / state_Game.tileSize) * 100) /
-        100} 
-    ypos:${Math.round(bomberData.y * 100) / 100} 
-    sum:${Math.round((state_Game.disp[1] / state_Game.tileSize) * 100) / 100 +
-      Math.round(bomberData.y * 100) / 100}
-      diff:${Math.abs(
-        Math.round(
-          ctx.canvas.height / 2 / state_Game.tileSize -
-            state_Game.disp[1] / state_Game.tileSize -
-            bomberData.y
-        )
-      )}`,
-      5,
-      36
-    );
+    // ctx.fillText(
+    //   `w/2:${Math.round((ctx.canvas.width / 2 / state_Game.tileSize) * 100) /
+    //     100}
+    //   xdisp:${Math.round((state_Game.disp[0] / state_Game.tileSize) * 100) /
+    //     100}
+    // xpos:${Math.round(bomberData.x * 100) / 100}
+    // sum:${Math.round((state_Game.disp[0] / state_Game.tileSize) * 100) / 100 +
+    //   Math.round(bomberData.x * 100) / 100}
+    //   diff:${Math.abs(
+    //     Math.round(
+    //       ctx.canvas.width / 2 / state_Game.tileSize -
+    //         state_Game.disp[0] / state_Game.tileSize -
+    //         bomberData.x
+    //     )
+    //   )}
+    //   expected: ${Math.round(
+    //     (canvs['bg'].width / 2 / state_Game.tileSize - bomberData.x) * 100
+    //   ) / 100}`,
+    //   5,
+    //   18
+    // );
+    // ctx.fillText(
+    //   `h/2:${Math.round((ctx.canvas.height / 2 / state_Game.tileSize) * 100) /
+    //     100}
+    //   ydisp:${Math.round((state_Game.disp[1] / state_Game.tileSize) * 100) /
+    //     100}
+    // ypos:${Math.round(bomberData.y * 100) / 100}
+    // sum:${Math.round((state_Game.disp[1] / state_Game.tileSize) * 100) / 100 +
+    //   Math.round(bomberData.y * 100) / 100}
+    //   diff:${Math.abs(
+    //     Math.round(
+    //       ctx.canvas.height / 2 / state_Game.tileSize -
+    //         state_Game.disp[1] / state_Game.tileSize -
+    //         bomberData.y
+    //     )
+    //   )}`,
+    //   5,
+    //   36
+    // );
   }
   // ctx.fillText(`id:${server.id}`, 5, 12);
   // for (let i = 0; i < ids.length; i++) {

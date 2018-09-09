@@ -189,8 +189,7 @@ const updateGame = iTick => {
     bomb[2] -= 1;
     if (bomb[2] === 0) {
       explodeBomb(bomb);
-      bomberData.numBombs =
-        ((bomberData.numBombs + 1) % bomberData.numBombsMax) + 1;
+      incBombNo(bomberData);
     }
   });
   gameVars.myBombs = gameVars.myBombs.filter(b => b[2] >= 0);
@@ -206,6 +205,23 @@ const updateGame = iTick => {
   // update explosions
 
   gameVars.explosions.forEach(expl => {
+    // explode other bombs
+    let bIndex = gameVars.myBombs.findIndex(
+      b => b[0] === expl[0] && b[1] === expl[1]
+    );
+    if (bIndex !== -1) {
+      explodeBomb(gameVars.myBombs[bIndex]);
+      gameVars.myBombs.splice(bIndex, 1);
+      incBombNo(bomberData);
+    } else {
+      bIndex = gameVars.bombs.findIndex(
+        b => b[0] === expl[0] && b[1] === expl[1]
+      );
+      if (bIndex !== -1) {
+        explodeBomb(gameVars.myBombs[bIndex]);
+        gameVars.bombs.splice(bIndex, 1);
+      }
+    }
     expl[3]--;
     if (expl[3] === 0) {
       if (gameVars.gameMap[expl[1]][expl[0]] === 2) {
@@ -214,6 +230,7 @@ const updateGame = iTick => {
       } else {
         changeGameBlock(expl[0], expl[1], 0);
       }
+    } else {
     }
   });
   gameVars.explosions = gameVars.explosions.filter(expl => expl[3] >= 0);
@@ -317,6 +334,12 @@ const updateGame = iTick => {
   }
   // update map translation smoothly
   // TODO ?
+};
+
+const incBombNo = bomberData => {
+  if (bomberData.numBombs < bomberData.numBombsMax) {
+    bomberData.numBombs++;
+  }
 };
 
 const changeGameBlock = (x, y, newVal) => {
@@ -565,7 +588,9 @@ const canPlaceExplosion = (x, y) => {
   switch (gameVars.gameMap[y][x]) {
     case 0:
     case 2:
-    case 3: // bombblock
+    case 3: // bomb block
+    case 4: // under-explosion block
+    case 5: // under-powerup block
       return true;
     default:
       return false;
@@ -574,6 +599,19 @@ const canPlaceExplosion = (x, y) => {
 
 const addExplosion = (x, y, type) => {
   gameVars.explosions.push([x, y, type, DEFAULTBOMBTIME / 2]);
+  if (gameVars.gameMap[y][x] === 0) {
+    changeGameBlock(x, y, 4);
+  }
+
+  if (type !== 0) {
+    // burn powerups
+    let pwIndex = gameVars.powerups.findIndex(pw => pw[0] === x && pw[1] === y);
+    if (pwIndex !== -1) {
+      gameVars.powerups.splice(pwIndex, 1);
+      changeGameBlock(x, y, 4);
+      emitMessage('destroyedPowerup', x, y);
+    }
+  }
 };
 
 const explodeBomb = bombData => {
@@ -582,6 +620,7 @@ const explodeBomb = bombData => {
   let y = bombData[1];
   let size = bombData[3] + 1;
   addExplosion(x, y, 0);
+  changeGameBlock(x, y, 0);
   let flags = [false, false, false, false];
   while (count < size) {
     if (!flags[0]) {

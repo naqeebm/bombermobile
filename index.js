@@ -29,6 +29,7 @@ let powerups = [];
 io.on('connection', con => {
   if (gameMap.length === 0) {
     gameMap = getNewGameMap(xTilesNum, yTilesNum);
+    powerups = [];
   }
   ids.push(con.id);
   console.log(con.id, 'CONNECTED');
@@ -79,6 +80,7 @@ io.on('connection', con => {
 
   con.on('newPowerup', data => {
     if (gameMap[data.y][data.x] === 2) {
+      // change under block to under powerup block
       gameMap[data.y][data.x] = 5;
       let newPopup = [
         data.x,
@@ -94,6 +96,8 @@ io.on('connection', con => {
   con.on('takePowerup', data => {
     let powerUp = powerups.filter(pw => pw[0] === data.x && pw[1] === data.y);
     if (powerUp.length > 0) {
+      // change under block to air
+      gameMap[data.y][data.x] = 0;
       powerUp = powerUp[0];
       io.sockets.emit('takePowerup', data);
       powerups = powerups.filter(pw => !(pw[0] === data.x && pw[1] === data.y));
@@ -145,6 +149,14 @@ io.on('connection', con => {
     if (gameMap[data.y][data.x] === 2) {
       gameMap[data.y][data.x] = 0;
       io.sockets.emit('destroyBlock', data);
+    }
+  });
+
+  con.on('destroyedPowerup', data => {
+    let index = powerups.findIndex(pw => pw[0] === data.x && pw[1] === data.y);
+    if (index !== -1) {
+      powerups.splice(index);
+      gameMap[data.y][data.x] = 0;
     }
   });
 });
