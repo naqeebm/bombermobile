@@ -89,7 +89,6 @@ io.on('connection', con => {
       ];
       powerups.push(newPopup);
       io.sockets.emit('newPowerup', newPopup);
-      console.log('powerups', powerups);
     }
   });
 
@@ -142,7 +141,6 @@ io.on('connection', con => {
         }
       }
     }
-    console.log('powerups', powerups);
   });
 
   con.on('destroyBlock', data => {

@@ -672,7 +672,6 @@ const state_Game = {
   draw: drawGame,
   update: updateGame,
   handleMouse: (x, y, down) => {
-    // console.log('handlemouse', x, y, down ? 'down' : 'up');
     let xDest = Math.floor(
       (x - state_Game.disp[0] - state_Game.canvasBoundOffsets[0]) *
         state_Game.touchScale
@@ -681,42 +680,66 @@ const state_Game = {
       (y - state_Game.disp[1] - state_Game.canvasBoundOffsets[1]) *
         state_Game.touchScale
     );
-    if (!down) {
-      // Destination block = (xDest,yDest)
-      let path = getPath(xDest, yDest);
-      if (path !== null) {
-        state_Game.pathBlocks = [];
-        for (let i = 0; i < path.length; i++) {
-          if (!(path[i][0] === bomberData.x && path[i][1] === bomberData.y)) {
-            state_Game.pathBlocks.push(path[i]);
-          }
-        }
-        state_Game.PATHCOLOR = state_Game.PATHCOLOR;
-      }
-    } else {
+    if (down) {
       if (state_Game.pathBlocks.length > 0) {
-        let collision = false;
-        state_Game.pathBlocks.forEach(blk => {
-          if (blk[0] === xDest && blk[1] === yDest) {
-            collision = true;
+        clearPath(true);
+        stopMotion();
+      } else {
+        let path = getPath(xDest, yDest);
+        if (path !== null) {
+          bomberData.nextMoves = [];
+          for (let i = 0; i < path.length; i++) {
+            if (!(path[i][0] === bomberData.x && path[i][1] === bomberData.y)) {
+              bomberData.nextMoves.push(path[i]);
+            }
           }
-        });
-        if (collision) {
-          bomberData.nextMoves = state_Game.pathBlocks;
+          // bomberData.nextMoves = state_Game.pathBlocks;
           emitMessage('startMotion', {
             x: bomberData.x,
             y: bomberData.y,
             undraw: [bomberData.undrawx, bomberData.undrawy],
             moves: bomberData.nextMoves
           });
-        } else {
-          clearPath();
         }
       }
-      if (bomberData.nextMoves.length > 0 && bomberData.moveTemp !== null) {
-        stopMotion(bomberData, true);
-      }
     }
+
+    // if (!down) {
+    //   // Destination block = (xDest, yDest)
+    //   let path = getPath(xDest, yDest);
+    //   if (path !== null) {
+    //     state_Game.pathBlocks = [];
+    //     for (let i = 0; i < path.length; i++) {
+    //       if (!(path[i][0] === bomberData.x && path[i][1] === bomberData.y)) {
+    //         state_Game.pathBlocks.push(path[i]);
+    //       }
+    //     }
+    //     state_Game.PATHCOLOR = state_Game.PATHCOLOR;
+    //   }
+    // } else {
+    //   if (state_Game.pathBlocks.length > 0) {
+    //     let collision = false;
+    //     state_Game.pathBlocks.forEach(blk => {
+    //       if (blk[0] === xDest && blk[1] === yDest) {
+    //         collision = true;
+    //       }
+    //     });
+    //     if (collision) {
+    //       bomberData.nextMoves = state_Game.pathBlocks;
+    //       emitMessage('startMotion', {
+    //         x: bomberData.x,
+    //         y: bomberData.y,
+    //         undraw: [bomberData.undrawx, bomberData.undrawy],
+    //         moves: bomberData.nextMoves
+    //       });
+    //     } else {
+    //       clearPath();
+    //     }
+    //   }
+    //   if (bomberData.nextMoves.length > 0 && bomberData.moveTemp !== null) {
+    //     stopMotion(bomberData, true);
+    //   }
+    // }
   },
   handleAction: () => {
     if (bomberData.numBombs > 0) {
