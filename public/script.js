@@ -52,8 +52,10 @@ const gameVars = {
 const DEFAULTBOMBTIME = 3 * gameVars.FPS;
 
 const bomberData = {
-  name: 'Player',
-  char: 1,
+  name: ['Player 2', 'Not player 1', 'Im noob', 'Me desu', 'Neck rope'][
+    Math.floor(Math.random() * 5)
+  ],
+  char: Math.floor(Math.random() * NUM_CHARS),
   score: 0,
   x: 1,
   y: 1,
@@ -73,8 +75,8 @@ let flags = { resize: false };
 
 // server connection
 console.log('connecting...');
-const server = io.connect('http://localhost:8181');
-// const server = io.connect('http://178.128.35.83:8181');
+// const server = io.connect('http://localhost:8181');
+const server = io.connect('http://178.128.35.83:8181');
 
 const gotoMainGameMap = () => {
   emitMessage('enterMainGame', bomberData);
