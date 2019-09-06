@@ -1,8 +1,15 @@
 const express = require('express');
+const https = require('https');
+const fs = require('fs');
 const socket = require('socket.io');
 
 const app = express();
-const server = app.listen(8181, () => {
+const options = { 
+  key: fs.readFileSync('/etc/letsencrypt/live/naqeeb.xyz/privkey.pem'), 
+  cert: fs.readFileSync('/etc/letsencrypt/live/naqeeb.xyz/cert.pem')
+};
+const server = https.createServer(options, app);
+server.listen(8181, () => {
   console.log('listening on port 8181');
 });
 
