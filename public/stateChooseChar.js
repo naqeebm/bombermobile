@@ -39,6 +39,32 @@ const drawLobby = ctxs => {
           'white',
           state_Lobby.tileSize + 'px roman'
         );
+        fillTextInRectCentre(
+          ctxs['bg'],
+          'Game room select',
+          0,
+          state_Lobby.tileSize * 2, state_Lobby.numTiles * state_Lobby.tileSize, state_Lobby.tileSize,
+          'white',
+          state_Lobby.tileSize / 2 + 'px calibri'
+        );
+        fillTextInRectCentre(
+          ctxs['bg'],
+          'Choose an available game room or create one.',
+          0,
+          state_Lobby.tileSize * 2, state_Lobby.numTiles * state_Lobby.tileSize, state_Lobby.tileSize * 3,
+          'white',
+          state_Lobby.tileSize + 'px roman'
+        );
+        drawCharNameCard(ctxs['fg'], bomberData.char, bomberData.name,
+          state_Lobby.tileSize, state_Lobby.tileSize * 5,
+          state_Lobby.tileSize * ((state_Lobby.numTiles / 2) - 1), state_Lobby.tileSize);
+
+        drawTextBox(ctxs['fg'], 'Create new Room!',
+          state_Lobby.tileSize * state_Lobby.numTiles - (state_Lobby.tileSize * 10),
+          state_Lobby.tileSize * 5,
+          state_Lobby.tileSize * ((state_Lobby.numTiles / 2) - 1),
+          state_Lobby.tileSize,
+          null, 'lightgrey', 2, true);
 
         // char + name placement
         var charhw = [state_Lobby.tileSize * 7, state_Lobby.tileSize * 8];
@@ -68,32 +94,7 @@ const drawLobby = ctxs => {
     case 1:
       {
         // title + subtitle
-        fillTextInRectCentre(
-          ctxs['bg'],
-          'Game room select',
-          0,
-          state_Lobby.tileSize * 2, state_Lobby.numTiles * state_Lobby.tileSize, state_Lobby.tileSize,
-          'white',
-          state_Lobby.tileSize / 2 + 'px calibri'
-        );
-        fillTextInRectCentre(
-          ctxs['bg'],
-          'Choose an available game room or create one.',
-          0,
-          state_Lobby.tileSize * 2, state_Lobby.numTiles * state_Lobby.tileSize, state_Lobby.tileSize * 3,
-          'white',
-          state_Lobby.tileSize + 'px roman'
-        );
-        drawCharNameCard(ctxs['fg'], bomberData.char, bomberData.name,
-          state_Lobby.tileSize, state_Lobby.tileSize * 5,
-          state_Lobby.tileSize * ((state_Lobby.numTiles / 2) - 1), state_Lobby.tileSize);
 
-        drawTextBox(ctxs['fg'], 'Create new Room!',
-          state_Lobby.tileSize * state_Lobby.numTiles - (state_Lobby.tileSize * 10),
-          state_Lobby.tileSize * 5,
-          state_Lobby.tileSize * ((state_Lobby.numTiles / 2) - 1),
-          state_Lobby.tileSize,
-          null, 'lightgrey', 2, true);
       }
       break;
   }

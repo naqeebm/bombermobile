@@ -17,9 +17,9 @@
   },
   "homepage": "https://github.com/naqeebm/bombermobile#readme",
   "dependencies": {
-    "express": "^4.16.3",
+    "express": "^4.17.1",
     "fs": "0.0.1-security",
-    "nodemon": "^1.18.3",
-    "socket.io": "^2.1.1"
+    "nodemon": "^1.19.4",
+    "socket.io": "^2.3.0"
   }
 }
