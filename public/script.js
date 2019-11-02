@@ -1,9 +1,11 @@
 // resizing of webpage
 const canvs = {};
 const ctxs = {};
+canvs['temp'] = document.getElementById('canv0');
 canvs['bg'] = document.getElementById('canv1');
 canvs['fg'] = document.getElementById('canv3');
 canvs['mid'] = document.getElementById('canv2');
+ctxs['temp'] = canvs['temp'].getContext('2d');
 ctxs['bg'] = canvs['bg'].getContext('2d');
 ctxs['fg'] = canvs['fg'].getContext('2d');
 ctxs['mid'] = canvs['mid'].getContext('2d');
@@ -31,6 +33,9 @@ const gameVars = {
   TILESIZE: 40,
   gameMap: [],
   state: 'LOADING',
+  updateButtonText: () => {
+    document.getElementById('action').value = gameStates[gameVars.state].actionButtonText;
+  },
   changeState: newState => {
     for (let ctx in ctxs) {
       ctxs[ctx].resetTransform();
@@ -38,9 +43,8 @@ const gameVars = {
     }
     console.log('changeState:', newState, ticker);
     ticker = -1;
-    document.getElementById('action').value =
-      gameStates[newState].actionButtonText;
     gameVars.state = newState;
+    gameVars.updateButtonText();
   },
   changedBlocks: [],
   FPS: 60,
@@ -75,12 +79,16 @@ let flags = { resize: false };
 
 // server connection
 console.log('connecting...');
-// const server = io.connect('http://localhost:8181');
-const server = io.connect('http://178.128.35.46:8181');
+const server = io.connect('http://localhost:8181');
+// const server = io.connect('http://178.128.35.46:8181');
 
 const gotoMainGameMap = () => {
   emitMessage('enterMainGame', bomberData);
 };
+
+server.on('gameData', data => {
+  state_Lobby.dataRecieved(data);
+})
 
 server.on('connect', data => {
   console.log('connected!');
