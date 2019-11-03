@@ -21,8 +21,9 @@ const io = socket(server);
 const xTilesNum = 32;
 const yTilesNum = 32;
 const numPowerupTypes = 4;
-let players = new Array();
+let players = {};
 let ids = [];
+let playing = { main: [] };
 let gameMap = [];
 const DEFAULT_SPAWN_PLACES = [
   [1, 1],
@@ -32,7 +33,19 @@ const DEFAULT_SPAWN_PLACES = [
 ];
 let powerups = [];
 
-// let state = 'PLAY';
+var ticker = null;
+var timeStarted = null;
+var timems = 0;
+var gameDataCallbacks = [];
+
+function startTicker() {
+  clearInterval(ticker);
+  timems = 0;
+  timeStarted = Date.now();
+  ticker = setInterval(() => {
+    timems++;
+  }, 100);
+}
 
 io.on('connection', con => {
   if (gameMap.length === 0) {
@@ -40,6 +53,7 @@ io.on('connection', con => {
     powerups = [];
   }
   ids.push(con.id);
+  sendGameData();
   console.log(con.id, 'CONNECTED');
   console.log('>>', ids, 'CONNECTED');
 
@@ -54,7 +68,13 @@ io.on('connection', con => {
       newPlayersArray[ids[i]] = players[ids[i]];
     }
     players = newPlayersArray;
+    var newPlayingArray = [];
+    for (var game in playing) {
+      newPlayingArray[game] = playing[game].filter(id => id !== con.id)
+    }
+    playing = newPlayingArray;
     io.emit('playerLeft', con.id);
+    sendGameData();
     console.log(con.id, 'DISCONNECTED', data);
   });
 
@@ -77,11 +97,14 @@ io.on('connection', con => {
       }
     });
     players[con.id] = data;
+    players[con.id].game = 'main';
+    playing.main.push(con.id);
     io.sockets.emit('newPlayer', { id: con.id, payload: data });
     con.emit('gameMap', gameMap);
     powerups.forEach(pw => {
       con.emit('newPowerup', pw);
     });
+    sendGameData();
   });
 
   con.on('newBomb', data => {
@@ -167,7 +190,58 @@ io.on('connection', con => {
       gameMap[data.y][data.x] = 0;
     }
   });
+
+  con.on('subscribeGamesData', () => {
+    sendGameData();
+    con.emit('gamesData', { payload: getGamesData() });
+    gameDataCallbacks.push(con.id);
+    console.log(con.id, gameDataCallbacks, 'SUBSCRIBED');
+  });
+
+  con.on('unsubscribeGameData', () => {
+    gameDataCallbacks = gameDataCallbacks.filter(g => g !== con.id);
+    console.log(con.id, gameDataCallbacks, 'UNSUBSCRIBED');
+  })
 });
+
+const getDummyGameObj = (name) => {
+  var names = ['meow', 'this is a gmae', 'lol', 'i win', 'loosersss4lyyyf'];
+  var IDs = ["msAqMWzmWZcPXvEATiyb", "mDgHHhyeSZxpUGtBfhKP", "CIfzWDZIrXacZQVUXDoE", "oLmLuSzPLGdxJCDmYILs", "HoadhYewEqRhHWlGhgjK", "zholNnlUikkwamKVYhTJ", "HWhBApgxXlcnjNbERbXo", "dmdUikjlNWwQwCbMXFOE", "mWMmEbvRoSYOqbFLJuMa", "slLculewzWFWFDYszRPK", "sxDzPDSwvFhFoxYjRFlA", "MPapwsigcMrfvQjQQoEC", "HYYiJBsByhdSydEtEdZo", "ApvCRDrjdAQDvkUKETnh", "DgugiqMfzycIOokbCDaq", "QtISIgWzTkUNJHJgQhKx", "bXyFzubXoMdLaCcouXiX", "WKtluUQtHEvHfWuyiRbO", "dGRKqgfCYJoTMBbSiNBG", "yNMcFRpjVAVSDpJXxIAg"];
+  var sizes = [[16, 16], [32, 32], [64, 64], [128, 128]];
+  var size = sizes[Math.floor((Math.random() * sizes.length))]
+  var t = Math.random() > 0.7 ? Date.now() + Math.random() * 100000 - timeStarted : null;
+  return {
+    id: IDs[Math.floor((Math.random() * IDs.length))],
+    owner: 'Server',
+    name: names[Math.floor((Math.random() * names.length))],
+    xTilesNum: size[0],
+    yTilesNum: size[1],
+    numPlayers: Math.floor(Math.random() * 30),
+    players,
+    timeStarted, time: t,
+    icon: [t !== null ? 4 : 0, 1]
+  };
+};
+const getGamesData = () => {
+  var gamesData = [{
+    id: 'main',
+    owner: 'Server',
+    name: 'Large Map', xTilesNum, yTilesNum,
+    numPlayers: playing['main'].length,
+    players,
+    timeStarted, time: Date.now() - timeStarted,
+    icon: [0, 1]
+  }];
+  return gamesData.concat(Array.from({ length: 24 }).map(() => getDummyGameObj()));
+};
+
+const sendGameData = () => {
+  var gamesData = getGamesData();
+  for (var i in gameDataCallbacks) {
+    io.sockets.to(gameDataCallbacks[i]).emit('gamesData', { payload: gamesData });
+    console.log('sent game data to ', gameDataCallbacks[i], '.');
+  }
+};
 
 const emitPlayerAttributeChange = (id, attr, newVal) => {
   io.sockets.emit('changePlayerAttribute', {
@@ -208,6 +282,8 @@ const getNewGameMap = (xTilesNum, yTilesNum) => {
   DEFAULT_SPAWN_PLACES.forEach(df => {
     map[df[1]][df[0]] = 0;
   });
+  startTicker();
+  sendGameData();
   return map;
 };
 

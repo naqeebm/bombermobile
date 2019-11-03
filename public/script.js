@@ -15,7 +15,6 @@ canvs['bg'].height = canvs['fg'].height = canvs['mid'].height =
 
 // game vars
 const NUM_CHARS = 4;
-const TWOPI = 2 * Math.PI;
 const DEFAULTBOMBSIZE = 1;
 const DEFAULTNUMBOMBS = 2;
 const gameStates = {
@@ -86,7 +85,7 @@ const gotoMainGameMap = () => {
   emitMessage('enterMainGame', bomberData);
 };
 
-server.on('gameData', data => {
+server.on('gamesData', data => {
   state_Lobby.dataRecieved(data);
 })
 
@@ -204,7 +203,7 @@ const addBomb = (bombsArray, x, y, life, bombSize) => {
 };
 
 const emitMessage = (messageType, data) => {
-  console.log('emit message', messageType, data);
+  // console.log('emit message', messageType, data);
   if (server.connected) {
     server.emit(messageType, data);
   }
@@ -381,35 +380,68 @@ canvs['fg'].addEventListener('keyup', e => {
 });
 
 canvs['fg'].addEventListener('mousedown', e => {
-  gameStates[gameVars.state].handleMouse(e.pageX, e.pageY, true);
-});
-
-canvs['fg'].addEventListener('mouseup', e => {
   gameStates[gameVars.state].handleMouse(e.pageX, e.pageY, false);
 });
 
-canvs['fg'].addEventListener('resize', e => {
+canvs['fg'].addEventListener('mouseup', e => {
+  gameStates[gameVars.state].handleMouse(e.pageX, e.pageY, true);
+});
+
+canvs['fg'].addEventListener('mousemove', e => {
+  gameStates[gameVars.state].handleMouse(e.pageX, e.pageY, null);
+});
+
+window.addEventListener('resize', e => {
   flags['resize'] = true;
 });
 
 canvs['fg'].addEventListener('touchstart', e => {
-  for (let i = 0; i < e.changedTouches.length; i++) {
-    gameStates[gameVars.state].handleMouse(
-      e.changedTouches[i].pageX,
-      e.changedTouches[i].pageY,
-      true
-    );
-  }
+  if (gameStates[gameVars.state].handleTouch !== undefined)
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      gameStates[gameVars.state].handleTouch(
+        e.changedTouches[i].identifier,
+        e.changedTouches[i].pageX,
+        e.changedTouches[i].pageY,
+        'start'
+      );
+    }
+});
+
+canvs['fg'].addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (gameStates[gameVars.state].handleTouch !== undefined)
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      gameStates[gameVars.state].handleTouch(
+        e.changedTouches[i].identifier,
+        e.changedTouches[i].pageX,
+        e.changedTouches[i].pageY,
+        'move'
+      );
+    }
 });
 
 canvs['fg'].addEventListener('touchend', e => {
-  for (let i = 0; i < e.changedTouches.length; i++) {
-    gameStates[gameVars.state].handleMouse(
-      e.changedTouches[i].pageX,
-      e.changedTouches[i].pageY,
-      false
-    );
-  }
+  if (gameStates[gameVars.state].handleTouch !== undefined)
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      gameStates[gameVars.state].handleTouch(
+        e.changedTouches[i].identifier,
+        e.changedTouches[i].pageX,
+        e.changedTouches[i].pageY,
+        'end'
+      );
+    }
+});
+
+canvs['fg'].addEventListener('touchend', e => {
+  if (gameStates[gameVars.state].handleTouch !== undefined)
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      gameStates[gameVars.state].handleTouch(
+        e.changedTouches[i].identifier,
+        e.changedTouches[i].pageX,
+        e.changedTouches[i].pageY,
+        'end'
+      );
+    }
 });
 
 canvs['fg'].addEventListener('contextmenu', e => {
